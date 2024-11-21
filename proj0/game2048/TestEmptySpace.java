@@ -25,7 +25,7 @@ public class TestEmptySpace {
 
         b = new Board(rawVals, 0);
         assertTrue("Board is full of empty space\n" + b,
-                Model.emptySpaceExists(b));
+                Model.emptySpaceExists(b,1));
     }
 
     @Test
@@ -40,7 +40,7 @@ public class TestEmptySpace {
 
         b = new Board(rawVals, 0);
 
-        assertTrue("Top row is empty\n" + b, Model.emptySpaceExists(b));
+        assertTrue("Top row is empty\n" + b, Model.emptySpaceExists(b,2));
     }
 
     @Test
@@ -55,7 +55,7 @@ public class TestEmptySpace {
 
         b = new Board(rawVals, 0);
         assertTrue("Bottom row is empty\n" + b,
-                Model.emptySpaceExists(b));
+                Model.emptySpaceExists(b,3));
     }
 
 
@@ -72,7 +72,7 @@ public class TestEmptySpace {
         b = new Board(rawVals, 0);
 
         assertTrue("Left col is empty\n" + b,
-                Model.emptySpaceExists(b));
+                Model.emptySpaceExists(b,4));
     }
 
     @Test
@@ -88,7 +88,7 @@ public class TestEmptySpace {
         b = new Board(rawVals, 0);
 
         assertTrue("Right col is empty\n" + b,
-                Model.emptySpaceExists(b));
+                Model.emptySpaceExists(b,5));
     }
 
     @Test
@@ -104,7 +104,7 @@ public class TestEmptySpace {
         b = new Board(rawVals, 0);
 
         assertTrue("Board is not full\n" + b,
-                Model.emptySpaceExists(b));
+                Model.emptySpaceExists(b,6));
     }
 
     @Test
@@ -121,7 +121,7 @@ public class TestEmptySpace {
 
         b = new Board(rawVals, 0);
 
-        assertFalse("Board is full\n" + b, Model.emptySpaceExists(b));
+        assertFalse("Board is full\n" + b, Model.emptySpaceExists(b,7));
     }
 
     @Test
@@ -136,6 +136,6 @@ public class TestEmptySpace {
 
         b = new Board(rawVals, 0);
 
-        assertFalse("Board is full\n" + b, Model.emptySpaceExists(b));
+        assertFalse("Board is full\n" + b, Model.emptySpaceExists(b,8));
     }
 }
