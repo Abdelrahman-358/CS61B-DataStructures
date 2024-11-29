@@ -106,5 +106,6 @@ public class TestUpOnly extends TestUtils {
         boolean changed = model.tilt(Side.NORTH);
         checkChanged(Side.NORTH, true, changed);
         checkModel(after, 4, 0, prevBoard, Side.NORTH);
+        org.junit.Assert.assertArrayEquals(after, before);
     }
 }
