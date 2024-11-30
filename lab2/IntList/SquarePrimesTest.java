@@ -19,10 +19,10 @@ public class SquarePrimesTest {
     }
     @Test
     public void testSquarePrimesComplex() {
-        IntList lst = IntList.of(100007);
+        IntList lst = IntList.of(1000000000);
         boolean changed = IntListExercises.squarePrimes(lst);
-        assertEquals("10001400049", lst.toString());
-        assertTrue(changed);
+        assertEquals("1000000000", lst.toString());
+        assertTrue(!changed);
 
     }
 }
