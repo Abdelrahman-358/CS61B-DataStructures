@@ -81,6 +81,9 @@ public class ArrayDeque<T> {
     public int size() {
         return size;
     }
+    public boolean isEmpty() {
+        return size == 0;
+    }
 
     /**
      * resize the deque
