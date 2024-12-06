@@ -125,7 +125,7 @@ public class ArrayDeque<T> implements Deque<T> {
     @Override
     public T removeFirst() {
         if (size == 0) return null;
-        if (size < deque.length / 4) {
+        if (size < deque.length / 4  && deque.length > 16) {
             resize(deque.length / 4);
         }
 
