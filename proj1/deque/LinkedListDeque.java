@@ -2,6 +2,9 @@ package deque;
 
 import deque.Deque;
 
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
 public class LinkedListDeque<T> implements Deque<T> {
     public class Node {
         T data;
@@ -22,6 +25,25 @@ public class LinkedListDeque<T> implements Deque<T> {
         sentinel.next = sentinel;
         sentinel.prev = sentinel;
         size = 0;
+    }
+
+    public Iterator<T> iterator() {
+        return new Iterator<T>() {
+            private int position = 0;
+
+            @Override
+            public boolean hasNext() {
+                return position < size;
+            }
+
+            @Override
+            public T next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                return get(position++);
+            }
+        };
     }
     /** function that told tha deque is empty or not */
     /**

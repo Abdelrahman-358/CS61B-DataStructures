@@ -4,6 +4,8 @@ import org.junit.Test;
 
 import deque.Deque;
 
+import java.util.Iterator;
+
 public class ArrayDeque<T> implements Deque<T> {
     private int nextFirst;
     private int nextLast;
@@ -25,7 +27,45 @@ public class ArrayDeque<T> implements Deque<T> {
         nextLast = 1;
         size = 0;
     }
+    public Iterator<T> iterator() {
+        return new Iterator<T>() {
+            private int position = 0; // Starting from "front" to "back" will produce off-by-one bug
 
+            @Override
+            public boolean hasNext() {
+                return position < size;
+            }
+
+            @Override
+            public T next() {
+                return deque[position++];
+            }
+        };
+
+    }
+    public boolean equals(Object o) {
+
+        // Performance wise
+        if (o == this) {
+            return true;
+        }
+
+        if (o instanceof ArrayDeque arrayDequeObj) {
+            if (this.size != arrayDequeObj.size) {
+                return false;
+            }
+
+            for (int i = 0; i < this.size(); i++) {
+                String value1 = this.get(i) == null ? "Null" : this.get(i).toString();
+                String value2 = ((ArrayDeque<?>) o).get(i) == null ? "Null" : ((ArrayDeque<?>) o).get(i).toString();
+                if (!value1.equals(value2)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
     /**
      * return the next index
      */
