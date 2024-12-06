@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import static org.junit.Assert.*;
 
-public class AlistTest {
+public class  ArrayDequeTest {
 
         @Test
         public void testEmptySize() {
