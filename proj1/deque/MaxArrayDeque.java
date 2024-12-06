@@ -12,7 +12,8 @@ public class MaxArrayDeque<T> extends ArrayDeque<T> {
         comparator = c;
     }
 
-    /** return the max depend on the initial comparitor
+    /**
+     * return the max depend on the initial comparitor
      *
      * @return
      */
