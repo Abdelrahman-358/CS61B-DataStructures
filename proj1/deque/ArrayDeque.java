@@ -19,6 +19,12 @@ public class ArrayDeque<T> implements Deque<T> {
         nextLast = 1;
         size = 0;
     }
+    public ArrayDeque(int capacity) {
+        deque = (T[]) new Object[capacity+1];
+        nextFirst = 0;
+        nextLast = 1;
+        size = 0;
+    }
 
     /**
      * return the next index

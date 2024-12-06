@@ -2,8 +2,6 @@ package deque;
 
 import org.junit.Test;
 
-import java.util.Optional;
-
 import static org.junit.Assert.*;
 
 public class ArrayDequeTest {
@@ -27,9 +25,9 @@ public class ArrayDequeTest {
     public void testAddAndGetLast() {
         ArrayDeque<Integer> L = new ArrayDeque<>();
         L.addLast(99);
-        assertEquals(Optional.of(99), L.getLast());
+        assertEquals(99, (int)L.getLast());
         L.addLast(36);
-        assertEquals(Optional.of(36), L.getLast());
+        assertEquals(36, (int)L.getLast());
     }
 
 
@@ -38,10 +36,10 @@ public class ArrayDequeTest {
         ArrayDeque<Integer> L = new ArrayDeque<>();
 
         L.addLast(99);
-        assertEquals(Optional.of(99), L.get(0));
+        assertEquals(99, (int)L.get(0));
         L.addLast(36);
-        assertEquals(Optional.of(99), L.get(0));
-        assertEquals(Optional.of(36), L.get(1));
+        assertEquals(99, (int)L.get(0));
+        assertEquals(36, (int)L.get(1));
     }
 
 
@@ -49,14 +47,14 @@ public class ArrayDequeTest {
     public void testRemove() {
         ArrayDeque<Integer> L = new ArrayDeque<>();
         L.addLast(99);
-        assertEquals(Optional.of(99), L.get(0));
+        assertEquals(99, (int)L.get(0));
         L.addLast(36);
-        assertEquals(Optional.of(99), L.get(0));
+        assertEquals(99, (int)L.get(0));
         L.removeLast();
-        assertEquals(Optional.of(99), L.getLast());
+        assertEquals(99,(int) L.getLast());
         L.addLast(100);
-        assertEquals(Optional.of(100), L.getLast());
-        assertEquals(2, L.size());
+        assertEquals(100, (int)L.getLast());
+        assertEquals(2, (int)L.size());
     }
 
     /**
