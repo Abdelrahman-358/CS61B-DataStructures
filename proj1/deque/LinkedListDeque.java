@@ -1,6 +1,6 @@
 package deque;
-
-public class LinkedListDeque<T> {
+import deque.Deque;
+public class LinkedListDeque<T> implements Deque<T> {
     public class Node{
         T data;
         Node next;
@@ -19,14 +19,13 @@ public class LinkedListDeque<T> {
         size = 0;
     }
     /** function that told tha deque is empty or not */
-    public boolean isEmpty() {
-        return sentinel == sentinel.next;
-    }
     /** function that return the size of the deque*/
+    @Override
     public int size() {
         return size;
     }
     /** add to the first of the deque */
+    @Override
     public void addFirst(T data) {
         Node newNode = new Node(data);
         newNode.next = sentinel.next;
@@ -37,6 +36,7 @@ public class LinkedListDeque<T> {
 
     }
     /** add to the last of the deque */
+    @Override
     public void addLast(T data) {
         Node newNode = new Node(data);
         newNode.prev = sentinel.prev;
@@ -46,6 +46,7 @@ public class LinkedListDeque<T> {
         size++;
     }
     /** function that removes the first element of the deque */
+    @Override
     public T removeFirst() {
         if(isEmpty()) return null;
         Node first = sentinel.next;
@@ -56,6 +57,7 @@ public class LinkedListDeque<T> {
 
     }
     /** function that removes the last element of the deque */
+    @Override
     public T removeLast() {
         if(isEmpty()) return null;
         Node last = sentinel.prev;
@@ -65,7 +67,8 @@ public class LinkedListDeque<T> {
         return last.data;
     }
     /** function that return the node at the specific index */
-    public Node get(int idx){
+    @Override
+    public T get(int idx){
         Node current = sentinel.next;
         int i=0;
         while (current  != sentinel && i < idx) {
@@ -73,16 +76,16 @@ public class LinkedListDeque<T> {
             current = current.next;
             i++;
         }
-        if(i==idx)return current;
+        if(i==idx)return current.data;
         return null;
     }
-    private  Node getRecursive(Node cur,int idx){
-        if(idx==0)return cur;
+    private  T getRecursive(Node cur,int idx){
+        if(idx==0)return cur.data;
         return getRecursive(cur.next,idx-1);
     }
     /** function that return the data in the node at the given index*/
     public T getRecursive(int indx){
-        return getRecursive(sentinel,indx).data;
+        return getRecursive(sentinel,indx);
     }
     /** function that print the elements in the deque */
     public void printDeque() {

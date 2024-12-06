@@ -2,9 +2,9 @@ package deque;
 
 import org.junit.Test;
 
-import java.util.Deque;
+import deque.Deque;
 
-public class ArrayDeque<T> {
+public class ArrayDeque<T> implements Deque<T> {
     private int nextFirst;
     private int nextLast;
     private int size;
@@ -80,9 +80,6 @@ public class ArrayDeque<T> {
      */
     public int size() {
         return size;
-    }
-    public boolean isEmpty() {
-        return size == 0;
     }
 
     /**

@@ -66,7 +66,6 @@ public class  ArrayDequeTest {
             for (int i = 0; i < N; i += 1) {
                 L.addLast(i);
             }
-
             for (int i = 0; i < N; i += 1) {
                 L.addLast(L.get(i));
             }
