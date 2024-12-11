@@ -5,7 +5,7 @@ import java.util.Observable;
 
 
 /** The state of a game of 2048.
- *  @author TODO: Abdelrahman Mostafa
+ *  @author TODO: YOUR NAME HERE
  */
 public class Model extends Observable {
     /** Current contents of the board. */
@@ -113,66 +113,6 @@ public class Model extends Observable {
         // TODO: Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
-        // merge
-        boolean ton=false;
-
-        board.setViewingPerspective(side);
-        // relax
-        for (int col = 0; col < board.size(); col++) {
-            int lastvalue = -1, co = -1, ro = -1;
-            for (int r = board.size() - 1; r >= 0; r--) {
-                Tile t = board.tile(col, r);
-                if(t==null) {
-                    int toc=col,tor=r;
-                    for(int rr=r-1;rr>=0;rr--) {
-                        Tile ne = board.tile(col, rr);
-                        if(ne!=null) {
-                            board.move(toc,tor,ne);
-                            changed = true;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        for (int col = 0; col < board.size(); col++) {
-            int lastvalue = -1, co = -1, ro = -1;
-            for (int r = board.size() - 1; r >= 0; r--) {
-                Tile t = board.tile(col, r);
-                if (t != null) {
-                    if (lastvalue == t.value()) {
-                        board.move(co, ro, t);
-                        score += 2* t.value();
-                        changed = true;
-                        lastvalue=-1;co=-1;ro=-1;
-                    } else {
-                        lastvalue = t.value();
-                        co = col;
-                        ro = r;
-                    }
-                }
-            }
-        }
-        // relax
-        for (int col = 0; col < board.size(); col++) {
-            int lastvalue = -1, co = -1, ro = -1;
-            for (int r = board.size() - 1; r >= 0; r--) {
-                Tile t = board.tile(col, r);
-                if(t==null) {
-                    int toc=col,tor=r;
-                    for(int rr=r-1;rr>=0;rr--) {
-                        Tile ne = board.tile(col, rr);
-                        if(ne!=null) {
-                            board.move(toc,tor,ne);
-                            changed = true;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-            board.setViewingPerspective(Side.NORTH);
 
         checkGameOver();
         if (changed) {
@@ -196,87 +136,8 @@ public class Model extends Observable {
     /** Returns true if at least one space on the Board is empty.
      *  Empty spaces are stored as null.
      * */
-    public static boolean emptySpaceExists(Board b,int ip) {
+    public static boolean emptySpaceExists(Board b) {
         // TODO: Fill in this function.
-        // test completly empty
-        if(ip==1){
-          boolean ok=true;
-            for (int i = 0; i < b.size(); i++) {
-                for (int j = 0; j < b.size(); j++) {
-                    Tile value=b.tile(i,j);
-                    if(value != null)ok=false;
-                }
-            }
-            return ok;
-        }
-        // Test empty top row
-        if(ip==2){
-        boolean ok=true;
-        int j= b.size()-1;
-        for (int i = 0; i < b.size(); i++) {
-            if(b.tile(i,j)!=null)ok=false;
-        }
-        return ok;
-        }
-        // Test empty bottom row
-        if(ip==3){
-            boolean ok=true;
-            int j= 0;
-            for (int i = 0; i < b.size(); i++) {
-                if(b.tile(i,j)!=null)ok=false;
-            }
-            return ok;
-        }
-        //Test empty left column
-        if(ip==4){
-            boolean ok=true;
-            int j= 0;
-            for (int i = 0; i < b.size(); i++) {
-                if(b.tile(j,i)!=null)ok=false;
-            }
-            return ok;
-        }
-        // test empty right column
-        if(ip==5){
-            boolean ok=true;
-            int j= b.size()-1;
-            for (int i = 0; i < b.size(); i++) {
-                if(b.tile(j,i)!=null)ok=false;
-            }
-            return ok;
-        }
-        // test almost full
-        if(ip==6){
-            int count=0;
-            for (int i = 0; i < b.size(); i++) {
-                for (int j = 0; j < b.size(); j++) {
-                    Tile value=b.tile(i,j);
-                    if(value == null)count++;
-                }
-            }
-            return (count==1);
-        }
-
-        if(ip==7){
-            int count=0;
-            for (int i = 0; i < b.size(); i++) {
-                for (int j = 0; j < b.size(); j++) {
-                    Tile value=b.tile(i,j);
-                    if(value != null)count++;
-                }
-            }
-            return (count==0);
-        }
-        if(ip==8){
-            int count=0;
-            for (int i = 0; i < b.size(); i++) {
-                for (int j = 0; j < b.size(); j++) {
-                    Tile value=b.tile(i,j);
-                    if(value != null)count++;
-                }
-            }
-            return (count==0);
-        }
         return false;
     }
 
@@ -287,16 +148,7 @@ public class Model extends Observable {
      */
     public static boolean maxTileExists(Board b) {
         // TODO: Fill in this function.
-        boolean ok=false;
-        for (int i = 0; i < b.size(); i++) {
-            for (int j = 0; j < b.size(); j++) {
-                Tile value=b.tile(i,j);
-                if(value == null)continue;
-                if(value.value() == MAX_PIECE)ok=true;
-            }
-        }
-
-        return ok;
+        return false;
     }
 
     /**
@@ -307,29 +159,7 @@ public class Model extends Observable {
      */
     public static boolean atLeastOneMoveExists(Board b) {
         // TODO: Fill in this function.
-        for(int i=0;i<b.size();i++){
-            for(int j=0;j<b.size();j++){
-                Tile value=b.tile(i,j);
-                if(value == null)return true;
-            }
-        }
-        int []dx= new int[]{-1, 0, 0, 1};
-        int []dy= new int[]{0, -1, 1, 0};
-        for (int i = 0; i < b.size(); i++) {
-            for (int j = 0; j < b.size(); j++) {
-                int value=b.tile(i,j).value();
-                for (int k = 0; k < 4; k++) {
-                    int nx=i+dx[k];
-                    int ny=j+dy[k];
-                    if(nx>=0 && nx<b.size() && ny>=0 && ny<b.size()) {
-                        if (b.tile(nx, ny).value() == value) return true;
-                    }
-                }
-            }
-        }
         return false;
-
-
     }
 
 
