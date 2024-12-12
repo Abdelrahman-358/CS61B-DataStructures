@@ -33,7 +33,7 @@ public class TestMyHashMapExtra {
         q.put("b", "a");
         q.put("a", "a");
         q.put("d", "a");
-        q.put("e", "a");                                     // a b c d e
+        q.put("e", "a");                         // a b c d e
         assertTrue(null != q.remove("e"));      // a b c d
         assertTrue(q.containsKey("a"));
         assertTrue(q.containsKey("b"));
@@ -43,7 +43,7 @@ public class TestMyHashMapExtra {
         assertTrue(q.containsKey("a"));
         assertTrue(q.containsKey("b"));
         assertTrue(q.containsKey("d"));
-        q.put("f", "a");                                     // a b d f
+        q.put("f", "a");                         // a b d f
         assertTrue(null != q.remove("d"));      // a b f
         assertTrue(q.containsKey("a"));
         assertTrue(q.containsKey("b"));
