@@ -31,12 +31,10 @@ public class LinkedListDeque<T> implements Deque<T> {
         return new Iterator<T>() {
             private int position = 0;
 
-            @Override
             public boolean hasNext() {
                 return position < size;
             }
 
-            @Override
             public T next() {
                 if (!hasNext()) {
                     throw new NoSuchElementException();
@@ -136,7 +134,6 @@ public class LinkedListDeque<T> implements Deque<T> {
         return getRecursive(sentinel, indx+1);
     }
     // updated
-    @Override
     public boolean equals(Object o) {
 
         // Performance wise

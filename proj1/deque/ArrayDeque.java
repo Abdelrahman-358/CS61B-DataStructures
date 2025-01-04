@@ -1,6 +1,5 @@
 package deque;
 
-import org.junit.Test;
 
 import deque.Deque;
 
@@ -15,12 +14,14 @@ public class ArrayDeque<T> implements Deque<T> {
     /**
      * Creates an empty list.
      */
+    @SuppressWarnings("unchecked")
     public ArrayDeque() {
         deque = (T[]) new Object[9];
         nextFirst = 0;
         nextLast = 1;
         size = 0;
     }
+    @SuppressWarnings("unchecked")
     public ArrayDeque(int capacity) {
         deque = (T[]) new Object[capacity+1];
         nextFirst = 0;
@@ -31,12 +32,10 @@ public class ArrayDeque<T> implements Deque<T> {
         return new Iterator<T>() {
             private int position = 0; // Starting from "front" to "back" will produce off-by-one bug
 
-            @Override
             public boolean hasNext() {
                 return position < size;
             }
 
-            @Override
             public T next() {
                 return deque[position++];
             }
@@ -83,7 +82,6 @@ public class ArrayDeque<T> implements Deque<T> {
     /**
      * Inserts X into the back of the list.
      */
-    @Override
     public void addLast(T x) {
         if (size == deque.length) {
             resize(deque.length * 2);
@@ -92,7 +90,6 @@ public class ArrayDeque<T> implements Deque<T> {
         nextLast = next(nextLast);
         size++;
     }
-    @Override
     public void addFirst(T x) {
         if (size == deque.length) {
             resize(deque.length * 2);
@@ -115,7 +112,6 @@ public class ArrayDeque<T> implements Deque<T> {
     /**
      * Gets the ith item in the list (0 is the front).
      */
-    @Override
     public T get(int i) {
         if (i >= size || size == 0) return null;
         int current = (nextFirst + i + 1) % deque.length;
@@ -126,7 +122,6 @@ public class ArrayDeque<T> implements Deque<T> {
     /**
      * Returns the number of items in the list.
      */
-    @Override
     public int size() {
         return size;
     }
@@ -134,6 +129,7 @@ public class ArrayDeque<T> implements Deque<T> {
     /**
      * resize the deque
      */
+    @SuppressWarnings("unchecked")
     void resize(int newSize) {
         T[] newDeque = (T[]) new Object[newSize];
         int cur = next(nextFirst);
@@ -152,7 +148,6 @@ public class ArrayDeque<T> implements Deque<T> {
      * Deletes item from back of the list and
      * returns deleted item.
      */
-    @Override
     public T removeLast() {
         if (size == 0) return null;
         if (size < deque.length / 4) {
@@ -168,7 +163,6 @@ public class ArrayDeque<T> implements Deque<T> {
      * Deletes item from front of the list and
      * returns deleted item.
      */
-    @Override
     public T removeFirst() {
         if (size == 0) return null;
         if (size < deque.length / 4  && deque.length > 16) {
@@ -184,7 +178,6 @@ public class ArrayDeque<T> implements Deque<T> {
     /**
      * print the deque
      */
-    @Override
     public void printDeque() {
         int current = next(nextFirst);
         while (current != nextLast) {
