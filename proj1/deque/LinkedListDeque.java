@@ -133,7 +133,32 @@ public class LinkedListDeque<T> implements Deque<T> {
      * function that return the data in the node at the given index
      */
     public T getRecursive(int indx) {
-        return getRecursive(sentinel, indx);
+        return getRecursive(sentinel, indx+1);
+    }
+    // updated
+    @Override
+    public boolean equals(Object o) {
+
+        // Performance wise
+        if (o == this) {
+            return true;
+        }
+
+        if (o instanceof ArrayDeque arrayDequeObj) {
+            if (this.size != arrayDequeObj.size()) {
+                return false;
+            }
+
+            for (int i = 0; i < this.size(); i++) {
+                String value1 = this.get(i) == null ? "Null" : this.get(i).toString();
+                String value2 = ((ArrayDeque<?>) o).get(i) == null ? "Null" : ((ArrayDeque<?>) o).get(i).toString();
+                if (!value1.equals(value2)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     /**
