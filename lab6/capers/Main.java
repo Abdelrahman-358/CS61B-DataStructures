@@ -7,7 +7,7 @@ import java.util.Arrays;
 import static capers.Utils.*;
 
 /** Canine Capers: A Gitlet Prelude.
- * @author TODO
+ * @author Abdelrahman Mostafa
 */
 public class Main {
     /**

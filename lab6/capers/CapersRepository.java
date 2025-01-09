@@ -62,7 +62,7 @@ public class CapersRepository {
         // TODO
         File storyFile = Utils.join(".capers","story.txt");
         String existing =  Utils.readContentsAsString(storyFile);
-        String updated = existing +System.lineSeparator()+text;
+        String updated = existing +text+System.lineSeparator();
         Utils.writeContents(storyFile, updated);
         System.out.println(Utils.readContentsAsString(storyFile));
     }
