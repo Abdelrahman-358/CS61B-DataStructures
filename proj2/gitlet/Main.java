@@ -21,7 +21,8 @@ public class Main {
                 // TODO: handle the `add [filename]` command
                 Repository.add(args[1]);
                 break;
-            // TODO: FILL THE REST IN
+            case "commit":
+                Repository.Commit(args[1]);
         }
     }
 }
