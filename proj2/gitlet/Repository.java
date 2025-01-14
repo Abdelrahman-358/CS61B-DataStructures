@@ -1,8 +1,8 @@
 package gitlet;
 
-import com.google.common.cache.AbstractCache;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,7 +34,7 @@ public class Repository {
     /** blobs directory */
     public static final File BLOBS_DIR = join(GITLET_DIR, "blobs");
     /** Head File */
-    public static final File HEADS = join(GITLET_DIR, "heads");
+    public static File HEAD = join(GITLET_DIR, "heads");
     /** staging directory that contain staging for adding and staging for removing .*/
     public static  File StagingAreaDir = join(GITLET_DIR, "stagingArea");
     /** staging for adding directory .*/
@@ -42,15 +42,15 @@ public class Repository {
     /** staging for removing directory. */
     public static File StagingForRemoving= join(StagingAreaDir, "stagingForRemoving");
     public static StagingArea StagingArea = new StagingArea();
-    public static Blob Blob=new Blob();
     public static String head =null;
     public static String parent ;
-   private static Map<String,File> tracked = new HashMap<>();
+    private static Map<String,File> tracked = new HashMap<>();
     /** printing error message. */
     public static void errorMessage(String message) {
         System.err.println(message);
         System.exit(1);
     }
+    /**  Sets up the directory structure and files required. */
     public static void setupPersistence(){
         GITLET_DIR.mkdirs();
         COMMIT_DIR.mkdirs();
@@ -58,6 +58,12 @@ public class Repository {
         StagingAreaDir.mkdirs();
         StagingForAdding.mkdirs();
         StagingForRemoving.mkdirs();
+        try{
+            HEAD.createNewFile();
+
+        }catch (IOException e){
+            errorMessage("Error creating head");
+        }
     }
     /**
      * This system will automatically start with one commit:
@@ -71,7 +77,6 @@ public class Repository {
      * commits in all repositories will trace back to it.
      */
     /**
-     * ToDo:creat first commit with message initial commit
      * ToDo:make new branch called master and point to initial commit
      */
 
@@ -81,13 +86,23 @@ public class Repository {
             errorMessage("A Gitlet version-control system already exists in the current directory.");
         }
         setupPersistence();
-        Commit commit = new Commit();
-        String headName =commit.saveCommit();
+
+        Commit initialCommit = new Commit();
+        String headName =initialCommit.saveCommit();
+        // at the initial commit the head and its parent is the same thing
         setHead(headName);
+        parent=getHead();
+
         // TODO: somehow make master branch
     }
+    /** function to check if we initialize a git let directory. */
+    public static boolean isInitialized(){
+        return GITLET_DIR.exists();
+    }
 
-    /**Description: Adds a copy of the file as it currently exists to the staging area
+
+    /**
+     *  Description: Adds a copy of the file as it currently exists to the staging area
      *  (see the description of the commit command). For this reason, adding a file is
      *  also called staging the file for addition. Staging an already-staged file overwrites
      *  the previous entry in the staging area with the new contents. The staging area should be
@@ -102,29 +117,36 @@ public class Repository {
      * todo:if the file is already staged overwrite it
      * todo:if the current working version of the file is identical to the version in the current commit
      *      do not stage it to be added and remove it from staging area if already there
+     * todo:The file will no longer be staged for removal (see gitlet rm), if it was at the time of the command.
      * */
-    public static void add(String FileName){
+    public static void add(String fileName) {
 
-            File f = new File(CWD,FileName);
-            if(FileExistInCWD(f)){
-                // fileSha is the name of the blob
-                String fileSha=Utils.sha1(f);
-                if(!TheSameAsTheCurrentCommit(fileSha)) {
-                    StagingArea.addFileToStagingArea(f, fileSha);
-                }
+        File file = new File(CWD, fileName);
+        if (!file.exists()) {
+            errorMessage("File does not exist.");
+        }
+        // fileSha is the name of the blob
+        // at staging area the file stored with its original name
+        // we compare the sha1 of the file and existing file at current commit
+        String contentSha = Utils.sha1(ToString(file));
+        if (isTheSameAsTheCurrentCommit(fileName)) {
+            // remove it from staging area
+            // and if staged for removal unstage in
+            StagingArea.removeFileFromStagingForAdding(fileName);
+            StagingArea.removeFileFromStagingForRemoving(fileName);
+        } else {
+            StagingArea.addFileToStagingForAdding(file, fileName);
+        }
 
-            }else{
-               errorMessage("File does not exist.");
-            }
     }
     /**
-     * todo:load the content of the parent commit
-     * todo:remove the files that staged for removal by rm command
-     * todo:add the files that staged to be add
-     * todo:after commit clear staging area
-     * todo:commit is added as a new node in the commit tree
-     * todo:set the head pointer to point to this commit
-     * todo:the parent head should points to current head
+     * :load the content of the parent commit
+     * :remove the files that staged for removal by rm command
+     * :add the files that staged to be added
+     * :after commit clear staging area
+     * :commit is added as a new node in the commit tree
+     * :set the head pointer to point to this commit
+     * :the parent head should points to current head
      * Each commit is identified by its SHA-1 id, which must include the file (blob)
      * references of its files, parent reference, log message, and commit time.
      * */
@@ -132,12 +154,12 @@ public class Repository {
         if (message == null) {
             errorMessage("Please enter a commit message.");
         }
-        // get the files than last commit trake
         // get the files from staging file
         // remove from them the files tha staged to be removed
         copyTheLastCommitTrackedFiles();
         copyFilesFromStagingArea();
         removeFilesThatStagedTobeRemoved();
+
         parent = getHead();
 
         Commit commit = new Commit(message, parent, tracked);
@@ -148,6 +170,7 @@ public class Repository {
 
     }
    public static void copyTheLastCommitTrackedFiles(){
+
         String commitName=getHead();
         File f=Utils.join(COMMIT_DIR,commitName);
         Commit lastCommit=Utils.readObject(f, Commit.class);
@@ -155,45 +178,58 @@ public class Repository {
    }
    public static void copyFilesFromStagingArea(){
         File[] files=StagingArea.getStagedFiles();
-        for(File f:files){
-            tracked.put(f.getName(),f);
+        if(files==null){
+            errorMessage("No changes added to the commit.");
+        }
+        for(File f: files){
+            String contentSha=sha1(ToString(f));
+            tracked.put(contentSha,f);
         }
    }
    public static void removeFilesThatStagedTobeRemoved(){
         File[] files = StagingArea.getStagedToBeRemoved();
         if(files!=null) {
             for (File f : files) {
-                tracked.remove(f.getName());
+                String contentSha=sha1(ToString(f));
+                tracked.remove(contentSha);
             }
         }
    }
 
 
-    /** function to make sure that we initialize a git let directory. */
-    public static boolean isInitialized(){
-        File f=new File(CWD, ".gitlet");
-        return f.exists();
-    }
+
     /** function that return the head of the current branch. */
-    public static String getHead(){
-        File f=new File(GITLET_DIR, "heads");
-        //TODO: complete this function
-        if(head==null){
-            return head=Utils.readContentsAsString(f);
+    public static String getHead() {
+        // Check if the head is already cached
+        if (head == null) {
+            head = Utils.readContentsAsString(HEAD);
         }
         return head;
     }
     /** updating the head. */
     public static void setHead(String name){
-        File f=new File(GITLET_DIR, "head");
-        Utils.writeContents(f,name);
+        Utils.writeContents(HEAD,name);
+        head=name;
     }
     /** Knowing if the current working version of the file
      * is identical to the version in the current commit
      */
-    public static boolean TheSameAsTheCurrentCommit(String fileName){
-        //TODO:some how do this
-        return false;
+    public static boolean isTheSameAsTheCurrentCommit(String fileName){
+        copyTheLastCommitTrackedFiles();
+        File file=new File(CWD, fileName);
+        String contentSha=sha1(ToString(file));
+        return (tracked.containsKey(contentSha));
+    }
+    /** for debuging purposes */
+    public static void showCommitTrackedFiles(String commitSha) {
+        File f = Utils.join(COMMIT_DIR, commitSha);
+        Commit commit = Utils.readObject(f, Commit.class);
+        Map<String, File> m = commit.getTrackedFiles();
+        // Display the tracked files
+        System.out.println("Tracked files in commit " + commitSha + ":");
+        for (Map.Entry<String, File> entry : m.entrySet()) {
+            System.out.println("  " + entry.getKey() + ": " + entry.getValue().getPath());
+        }
     }
 
     /** To Know if the file exist in the current working directory or not*/
@@ -201,5 +237,8 @@ public class Repository {
         return file.exists();
     }
 
-    /* TODO: fill in the rest of this class. */
+    public static String ToString(File file){
+        return (Utils.readContentsAsString(file)+file.getName());
+    }
+
 }

@@ -7,7 +7,7 @@ public class Blob {
        public static File BlobDirectory=Repository.BLOBS_DIR;
 
 
-    public void addBlobs(Map<String, File> filesToBeAdded) {
+    public static void addBlobs(Map<String, File> filesToBeAdded) {
         for (Map.Entry<String, File> entry : filesToBeAdded.entrySet()) {
             String FileName = entry.getKey(); // Filename
             File file = entry.getValue(); // File
@@ -16,7 +16,6 @@ public class Blob {
 
             if (!blobFile.exists()) {
                 Utils.writeContents(blobFile, Utils.readContentsAsString(file));
-
             }
         }
     }

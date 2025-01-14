@@ -30,29 +30,33 @@ public class Commit implements Serializable {
     /** parent of the commit. */
     private  String parent;
     /** that contains the referencing files. */
-    private  Map<String,File> TrackedFiles = new HashMap<>();
+    private  Map<String,File> trackedFiles;
 
     /** initial commit */
     public Commit(){
         this.message = "initial commit";
         this.date = new Date(0);
         this.parent = "";
-        this.TrackedFiles = new HashMap<>();
+        this.trackedFiles = new HashMap<>();
 
     }
     public Commit(String message,String parent ,Map<String,File> tracked){
+        if(message==null){
+            Repository.errorMessage("Please enter a commit message.");
+        }
         this.message = message;
         this.date = new Date();
         this.parent = parent;
-        this.TrackedFiles=tracked;
-
+        this.trackedFiles = new HashMap<>(tracked);
     }
     public String saveCommit(){
-            String name=Utils.sha1(this);
+
+            String name=Utils.sha1(this.toString());
             File f=new File(Repository.COMMIT_DIR,name);
-            Utils.writeContents(f,this);
+            Utils.writeObject(f,this);
             return name;
     }
+
 
 
 
@@ -68,7 +72,19 @@ public class Commit implements Serializable {
         return this.parent;
     }
     public Map<String, File> getTrackedFiles(){
-        return this.TrackedFiles;
+        return this.trackedFiles;
+    }
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Message: ").append(message).append("\n");
+        sb.append("Date: ").append(date).append("\n");
+        sb.append("Parent: ").append(parent).append("\n");
+        sb.append("Tracked Files:\n");
+        for (Map.Entry<String, File> entry : trackedFiles.entrySet()) {
+            sb.append("  ").append(entry.getKey()).append("\n");
+        }
+        return sb.toString();
     }
 
 

@@ -23,6 +23,7 @@ public class Main {
                 break;
             case "commit":
                 Repository.Commit(args[1]);
+
         }
     }
 }

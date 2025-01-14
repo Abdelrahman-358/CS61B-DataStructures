@@ -8,10 +8,20 @@ public class StagingArea {
     public static File StagingForAdding=Repository.StagingForAdding;
     public static File StagingForRemoving=Repository.StagingForRemoving;
 
-    public  static void addFileToStagingArea(File file,String fileName) {
+    public   void addFileToStagingForAdding(File file,String fileName) {
         // if already exist i override its content
             File stagedFile= new File(StagingForAdding,fileName);
             Utils.writeContents(stagedFile,Utils.readContentsAsString(file));
+
+    }
+    public   void removeFileFromStagingForAdding(String FileName) {
+        //remove file
+        File stagedFile= new File(StagingForAdding,FileName);
+        if(stagedFile.exists()){
+            stagedFile.delete();
+        }
+    }
+    public  void removeFileFromStagingForRemoving(String FileName) {
 
     }
     public  static void StageForRemoving(File file) {
