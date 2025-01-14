@@ -23,7 +23,10 @@ public class Main {
                 break;
             case "commit":
                 Repository.Commit(args[1]);
-
+                break;
+            case "gitTracked":
+                Repository.getCommitTrackedFiles(args[1]);
+                break;
         }
     }
 }

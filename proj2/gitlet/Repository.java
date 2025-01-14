@@ -221,15 +221,14 @@ public class Repository {
         return (tracked.containsKey(contentSha));
     }
     /** for debuging purposes */
-    public static void showCommitTrackedFiles(String commitSha) {
-        File f = Utils.join(COMMIT_DIR, commitSha);
-        Commit commit = Utils.readObject(f, Commit.class);
+    public static void getCommitTrackedFiles(String commitName){
+        Commit commit=Commit.getCommitByName(commitName);
         Map<String, File> m = commit.getTrackedFiles();
-        // Display the tracked files
-        System.out.println("Tracked files in commit " + commitSha + ":");
+        System.out.println("Tracked files in commit " + commitName + ":");
         for (Map.Entry<String, File> entry : m.entrySet()) {
-            System.out.println("  " + entry.getKey() + ": " + entry.getValue().getPath());
+            System.out.println("  " + entry.getValue().getName() );
         }
+
     }
 
     /** To Know if the file exist in the current working directory or not*/

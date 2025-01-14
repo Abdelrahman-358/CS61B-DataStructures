@@ -56,9 +56,11 @@ public class Commit implements Serializable {
             Utils.writeObject(f,this);
             return name;
     }
-
-
-
+    public static Commit getCommitByName(String name){
+        File f=new File(Repository.COMMIT_DIR,name);
+        Commit commit=Utils.readObject(f,Commit.class);
+        return commit;
+    }
 
 
     /** getters */

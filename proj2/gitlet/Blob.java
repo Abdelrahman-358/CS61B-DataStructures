@@ -19,4 +19,8 @@ public class Blob {
             }
         }
     }
+    public static File getBlobFile(String shaName){
+        File file = new File(BlobDirectory, shaName);
+        return file;
+    }
 }
