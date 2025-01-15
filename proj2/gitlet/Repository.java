@@ -18,7 +18,6 @@ import static gitlet.Utils.*;
  */
 public class Repository {
     /**
-     * TODO: add instance variables here.
      *
      * List all instance variables of the Repository class here with a useful
      * comment above them describing what that variable represents and how that
@@ -49,27 +48,8 @@ public class Repository {
     /** track the loaded commits */
     private static Map<String,Integer>isLoaded = new HashMap<>();
     private static Map<String,String>trackByName= new HashMap<>();
+    /** ------------------------------------------------------------init command----------------------------------------- */
 
-    /** printing error message. */
-    public static void errorMessage(String message) {
-        System.err.println(message);
-        System.exit(1);
-    }
-    /**  Sets up the directory structure and files required. */
-    public static void setupPersistence(){
-        GITLET_DIR.mkdirs();
-        COMMIT_DIR.mkdirs();
-        BLOBS_DIR.mkdirs();
-        StagingAreaDir.mkdirs();
-        StagingForAdding.mkdirs();
-        StagingForRemoving.mkdirs();
-        try{
-            HEAD.createNewFile();
-
-        }catch (IOException e){
-            errorMessage("Error creating head");
-        }
-    }
     /**
      * This system will automatically start with one commit:
      * a commit that contains no files and has
@@ -84,8 +64,6 @@ public class Repository {
     /**
      * ToDo:make new branch called master and point to initial commit
      */
-
-    /**  init command */
     public static void init() {
         if (isInitialized()) {
             errorMessage("A Gitlet version-control system already exists in the current directory.");
@@ -100,12 +78,7 @@ public class Repository {
 
         // TODO: somehow make master branch
     }
-    /** function to check if we initialize a git let directory. */
-    public static boolean isInitialized(){
-        return GITLET_DIR.exists();
-    }
-
-
+    /**--------------------------------------------------------------------------add command-----------------------------*/
     /**
      *  Description: Adds a copy of the file as it currently exists to the staging area
      *  (see the description of the commit command). For this reason, adding a file is
@@ -145,6 +118,7 @@ public class Repository {
         }
 
     }
+    /**-----------------------------------------------------------------commit command-----------------------------------*/
     /**
      * :load the content of the parent commit
      * :remove the files that staged for removal by rm command
@@ -178,6 +152,7 @@ public class Repository {
         setHead(newHead);
 
     }
+    /**----------------------------------------------------------------------------rm command----------------------------*/
     /**
      * Unstage the file if it is currently staged for addition
      * If the file is tracked in the current commit, stage it
@@ -191,11 +166,12 @@ public class Repository {
             StagingArea.removeFileFromStagingForAdding(fileName);
         }else{
             if(trackedByCurrentCommit(fileName)){
-
                 StagingArea.addFileToStagingForRemoving(fileName,trackByName.get(fileName));
+                removeFileFromCWD(fileName);
             }
         }
     }
+    /**--------------------------------------------------------------------------- helper methods------------------------*/
     public static boolean trackedByCurrentCommit(String fileName) {
         copyTheLastCommitTrackedFiles();
         return trackByName.containsKey(fileName);
@@ -221,7 +197,7 @@ public class Repository {
    public static void copyFilesFromStagingArea(){
 
         File[] files=StagingArea.getStagedFiles();
-        if(files==null){
+        if(files== null || files.length == 0){
             errorMessage("No changes added to the commit.");
         }
         for(File f: files){
@@ -241,7 +217,26 @@ public class Repository {
    }
 
 
+    /** printing error message. */
+    public static void errorMessage(String message) {
+        System.err.println(message);
+        System.exit(1);
+    }
+    /**  Sets up the directory structure and files required. */
+    public static void setupPersistence(){
+        GITLET_DIR.mkdirs();
+        COMMIT_DIR.mkdirs();
+        BLOBS_DIR.mkdirs();
+        StagingAreaDir.mkdirs();
+        StagingForAdding.mkdirs();
+        StagingForRemoving.mkdirs();
+        try{
+            HEAD.createNewFile();
 
+        }catch (IOException e){
+            errorMessage("Error creating head");
+        }
+    }
     /** function that return the head of the current branch. */
     public static String getHead() {
         // Check if the head is already cached
@@ -265,8 +260,18 @@ public class Repository {
         String contentSha=sha1(ToString(file));
         return (tracked.containsKey(contentSha));
     }
+    /** function to check if we initialize a git let directory. */
+    public static boolean isInitialized(){
+        return GITLET_DIR.exists();
+    }
 
-
+    // removing file from current working directory
+    public static void removeFileFromCWD(String fileName){
+        File file=new File(CWD, fileName);
+        if(file.exists()){
+            file.delete();
+        }
+    }
     /** To Know if the file exist in the current working directory or not*/
     public static boolean FileExistInCWD(File file){
         return file.exists();

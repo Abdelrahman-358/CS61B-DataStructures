@@ -51,6 +51,8 @@ public class Commit implements Serializable {
         this.date = new Date();
         this.parent = parent;
         // tacked sha -> file
+        this.trackBySha = new HashMap<>();
+        this.trackByName = new HashMap<>();
         for(Map.Entry<String,String> entry: tracked.entrySet()){
             trackBySha.put(entry.getKey(),entry.getValue());
             trackByName.put(entry.getValue(),entry.getKey());
