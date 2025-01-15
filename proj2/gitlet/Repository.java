@@ -1,8 +1,10 @@
 package gitlet;
 
-
+import java.text.SimpleDateFormat;
+import java.util.Formatter;
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -171,6 +173,38 @@ public class Repository {
             }
         }
     }
+    /**----------------------------------------------------------------------------log command---------------------------*/
+    /**
+     * Description: Starting at the current head commit, display information about each commit backwards along the commit
+     * tree until the initial commit, following the first parent commit links, ignoring any second parents found in merge
+     * commits. (In regular Git, this is what you get with git log --first-parent). This set of commit nodes is called the
+     * commit’s history. For every node in this history, the information it should display is the commit id, the time the
+     * commit was made, and the commit message. Here is an example of the exact format it should follow:
+     * */
+    public static void log() {
+        String current = getHead();
+        while (true) {
+            Commit commit = Commit.getCommitByName(current);
+            printCommit(current, commit.getMessage(), commit.getDate());
+            String par = commit.getParent();
+            if (par.equals("stop") || current.equals(par)) {
+                break;
+            }
+            current = par;
+        }
+    }
+
+    public static void printCommit(String name, String message, Date date) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy Z");
+        String formattedDate = dateFormat.format(date);
+        System.out.println("===");
+        System.out.println("commit " + name);
+        System.out.println(formattedDate);
+        System.out.println(message);
+        System.out.println();
+    }
+
+
     /**--------------------------------------------------------------------------- helper methods------------------------*/
     public static boolean trackedByCurrentCommit(String fileName) {
         copyTheLastCommitTrackedFiles();

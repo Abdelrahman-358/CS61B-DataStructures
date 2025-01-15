@@ -29,7 +29,9 @@ public class Main {
             case "rm":
                 Repository.rm(args[1]);
                 break;
-
+            case "log":
+                Repository.log();
+                break;
         }
     }
 }

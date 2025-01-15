@@ -38,7 +38,7 @@ public class Commit implements Serializable {
     public Commit(){
         this.message = "initial commit";
         this.date = new Date(0);
-        this.parent = "";
+        this.parent = "stop";
         this.trackByName = new HashMap<>();
         this.trackBySha = new HashMap<>();
 
