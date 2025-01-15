@@ -1,12 +1,9 @@
 package gitlet;
 
 import java.text.SimpleDateFormat;
-import java.util.Formatter;
+import java.util.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 import static gitlet.Utils.*;
 
@@ -203,6 +200,13 @@ public class Repository {
         System.out.println(message);
         System.out.println();
     }
+//    public static void global_log(){
+//        List<String> ls=Utils.plainFilenamesIn(COMMIT_DIR);
+//        for(String filename:ls){
+//            Commit commit = Commit.getCommitByName(filename);
+//            printCommit(filename, commit.getMessage(), commit.getDate());
+//        }
+//    }
 
 
     /**--------------------------------------------------------------------------- helper methods------------------------*/
@@ -254,7 +258,7 @@ public class Repository {
     /** printing error message. */
     public static void errorMessage(String message) {
         System.err.println(message);
-        System.exit(1);
+        System.exit(0);
     }
     /**  Sets up the directory structure and files required. */
     public static void setupPersistence(){
