@@ -11,6 +11,8 @@ public class Main {
     public static void main(String[] args) {
         // TODO: what if args is empty?
         // TODO: handle errors that related to args size
+        // ToDo: you must not store files at commit you must just store the name of the blobs and
+        //     get them from blob file
         String firstArg = args[0];
         switch(firstArg) {
             case "init":
@@ -22,11 +24,12 @@ public class Main {
                 Repository.add(args[1]);
                 break;
             case "commit":
-                Repository.Commit(args[1]);
+                Repository.commit(args[1]);
                 break;
-            case "gitTracked":
-                Repository.getCommitTrackedFiles(args[1]);
+            case "rm":
+                Repository.rm(args[1]);
                 break;
+
         }
     }
 }

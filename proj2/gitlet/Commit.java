@@ -7,7 +7,6 @@ import java.io.Serializable;
 import java.util.Date; // TODO: You'll likely use this in this class
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 
 /** Represents a gitlet commit object.
  *  TODO: It's a good idea to give a description here of what else this Class
@@ -30,24 +29,32 @@ public class Commit implements Serializable {
     /** parent of the commit. */
     private  String parent;
     /** that contains the referencing files. */
-    private  Map<String,File> trackedFiles;
+    // Map Store Name -> sha
+    private  Map<String,String> trackByName;
+    // Map Store sha -> Name
+    private  Map<String,String> trackBySha;
 
     /** initial commit */
     public Commit(){
         this.message = "initial commit";
         this.date = new Date(0);
         this.parent = "";
-        this.trackedFiles = new HashMap<>();
+        this.trackByName = new HashMap<>();
+        this.trackBySha = new HashMap<>();
 
     }
-    public Commit(String message,String parent ,Map<String,File> tracked){
+    public Commit(String message,String parent ,Map<String,String> tracked){
         if(message==null){
             Repository.errorMessage("Please enter a commit message.");
         }
         this.message = message;
         this.date = new Date();
         this.parent = parent;
-        this.trackedFiles = new HashMap<>(tracked);
+        // tacked sha -> file
+        for(Map.Entry<String,String> entry: tracked.entrySet()){
+            trackBySha.put(entry.getKey(),entry.getValue());
+            trackByName.put(entry.getValue(),entry.getKey());
+        }
     }
     public String saveCommit(){
 
@@ -56,6 +63,9 @@ public class Commit implements Serializable {
             Utils.writeObject(f,this);
             return name;
     }
+    /**
+     *return commit object using commit name
+     * */
     public static Commit getCommitByName(String name){
         File f=new File(Repository.COMMIT_DIR,name);
         Commit commit=Utils.readObject(f,Commit.class);
@@ -73,8 +83,11 @@ public class Commit implements Serializable {
     public String getParent(){
         return this.parent;
     }
-    public Map<String, File> getTrackedFiles(){
-        return this.trackedFiles;
+    public Map<String, String> getTrackByName(){
+        return this.trackByName;
+    }
+    public Map<String, String> getTrackBySha(){
+        return this.trackBySha;
     }
     @Override
     public String toString() {
@@ -83,7 +96,10 @@ public class Commit implements Serializable {
         sb.append("Date: ").append(date).append("\n");
         sb.append("Parent: ").append(parent).append("\n");
         sb.append("Tracked Files:\n");
-        for (Map.Entry<String, File> entry : trackedFiles.entrySet()) {
+        for (Map.Entry<String, String> entry : trackBySha.entrySet()) {
+            sb.append("  ").append(entry.getKey()).append("\n");
+        }
+        for (Map.Entry<String, String> entry : trackByName.entrySet()) {
             sb.append("  ").append(entry.getKey()).append("\n");
         }
         return sb.toString();

@@ -41,10 +41,15 @@ public class Repository {
     public static File StagingForAdding = join(StagingAreaDir, "stagingForAdding");
     /** staging for removing directory. */
     public static File StagingForRemoving= join(StagingAreaDir, "stagingForRemoving");
-    public static StagingArea StagingArea = new StagingArea();
+   // public static StagingArea StagingArea = new StagingArea();
     public static String head =null;
     public static String parent ;
-    private static Map<String,File> tracked = new HashMap<>();
+    // Map to store BlobName -> and the fileName
+    private static Map<String,String> tracked = new HashMap<>();
+    /** track the loaded commits */
+    private static Map<String,Integer>isLoaded = new HashMap<>();
+    private static Map<String,String>trackByName= new HashMap<>();
+
     /** printing error message. */
     public static void errorMessage(String message) {
         System.err.println(message);
@@ -128,12 +133,13 @@ public class Repository {
         // fileSha is the name of the blob
         // at staging area the file stored with its original name
         // we compare the sha1 of the file and existing file at current commit
-        String contentSha = Utils.sha1(ToString(file));
+
         if (isTheSameAsTheCurrentCommit(fileName)) {
             // remove it from staging area
             // and if staged for removal unstage in
             StagingArea.removeFileFromStagingForAdding(fileName);
             StagingArea.removeFileFromStagingForRemoving(fileName);
+
         } else {
             StagingArea.addFileToStagingForAdding(file, fileName);
         }
@@ -150,13 +156,14 @@ public class Repository {
      * Each commit is identified by its SHA-1 id, which must include the file (blob)
      * references of its files, parent reference, log message, and commit time.
      * */
-    public static void Commit(String message) {
+    public static void commit(String message) {
         if (message == null) {
             errorMessage("Please enter a commit message.");
         }
         // get the files from staging file
         // remove from them the files tha staged to be removed
         copyTheLastCommitTrackedFiles();
+
         copyFilesFromStagingArea();
         removeFilesThatStagedTobeRemoved();
 
@@ -164,33 +171,70 @@ public class Repository {
 
         Commit commit = new Commit(message, parent, tracked);
         String newHead = commit.saveCommit();
-        Blob.addBlobs(tracked);
+
+        Blob.addBlobs(StagingArea.getStagedFiles());
+
         StagingArea.clear();
         setHead(newHead);
 
     }
-   public static void copyTheLastCommitTrackedFiles(){
+    /**
+     * Unstage the file if it is currently staged for addition
+     * If the file is tracked in the current commit, stage it
+     * for removal and remove the file from the working directory
+     * if the user has not already done so (do not remove it unless
+     * it is tracked in the current commit).
+     * */
 
+    public static void rm(String fileName) {
+        if(StagingArea.isStagedForAdding(fileName)){
+            StagingArea.removeFileFromStagingForAdding(fileName);
+        }else{
+            if(trackedByCurrentCommit(fileName)){
+
+                StagingArea.addFileToStagingForRemoving(fileName,trackByName.get(fileName));
+            }
+        }
+    }
+    public static boolean trackedByCurrentCommit(String fileName) {
+        copyTheLastCommitTrackedFiles();
+        return trackByName.containsKey(fileName);
+
+    }
+   public static void copyTheLastCommitTrackedFiles(){
+       if(isLoaded.containsKey(getHead())){
+           return;
+       }
+       isLoaded.put(getHead(), 1);
         String commitName=getHead();
         File f=Utils.join(COMMIT_DIR,commitName);
         Commit lastCommit=Utils.readObject(f, Commit.class);
-       tracked.putAll(lastCommit.getTrackedFiles());
+
+        Map<String,String>trackBySha=lastCommit.getTrackBySha();
+        trackByName=lastCommit.getTrackByName();
+
+        // key is the sha of the content of the file with this name(value)
+       for(Map.Entry<String,String> entry: trackBySha.entrySet()){
+           tracked.put(entry.getKey(),entry.getValue());
+       }
    }
    public static void copyFilesFromStagingArea(){
+
         File[] files=StagingArea.getStagedFiles();
         if(files==null){
             errorMessage("No changes added to the commit.");
         }
         for(File f: files){
             String contentSha=sha1(ToString(f));
-            tracked.put(contentSha,f);
+            tracked.put(contentSha,f.getName());
+            
         }
    }
    public static void removeFilesThatStagedTobeRemoved(){
         File[] files = StagingArea.getStagedToBeRemoved();
         if(files!=null) {
             for (File f : files) {
-                String contentSha=sha1(ToString(f));
+                String contentSha=Utils.readContentsAsString(f);
                 tracked.remove(contentSha);
             }
         }
@@ -211,7 +255,8 @@ public class Repository {
         Utils.writeContents(HEAD,name);
         head=name;
     }
-    /** Knowing if the current working version of the file
+    /**
+     * Knowing if the current working version of the file
      * is identical to the version in the current commit
      */
     public static boolean isTheSameAsTheCurrentCommit(String fileName){
@@ -220,16 +265,7 @@ public class Repository {
         String contentSha=sha1(ToString(file));
         return (tracked.containsKey(contentSha));
     }
-    /** for debuging purposes */
-    public static void getCommitTrackedFiles(String commitName){
-        Commit commit=Commit.getCommitByName(commitName);
-        Map<String, File> m = commit.getTrackedFiles();
-        System.out.println("Tracked files in commit " + commitName + ":");
-        for (Map.Entry<String, File> entry : m.entrySet()) {
-            System.out.println("  " + entry.getValue().getName() );
-        }
 
-    }
 
     /** To Know if the file exist in the current working directory or not*/
     public static boolean FileExistInCWD(File file){
