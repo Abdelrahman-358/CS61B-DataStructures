@@ -38,7 +38,7 @@ public class StagingArea {
     /**
      * return the files that staged for adding that will be saved at blobs file and been tracked by next commit
      * */
-    public static File[] getStagedFiles(){
+    public static File[] getStagedForAdding(){
         File[] files= StagingForAdding.listFiles();
         return files;
     }
@@ -56,7 +56,7 @@ public class StagingArea {
      * Deletes all files in the StagingForAdding and StagingForRemoving directories.
      */
     public static void clear() {
-        File[] toBeAdded = getStagedFiles();
+        File[] toBeAdded = getStagedForAdding();
         for (File file : toBeAdded) {
             file.delete();
         }
