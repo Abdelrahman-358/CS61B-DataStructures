@@ -7,13 +7,13 @@ import java.io.IOException;
 
 import static gitlet.Utils.*;
 
-// TODO: any imports you need here
 
-/** Represents a gitlet repository.
+/**
+ * Represents a gitlet repository.
  *  TODO: It's a good idea to give a description here of what else this Class
  *  does at a high level.
  *
- *  @author Abdelrahman Mostafa
+ * @author Abdelrahman Mostafa
  */
 public class Repository {
     /**
@@ -74,7 +74,7 @@ public class Repository {
      * The `master` branch is set as the current branch. The timestamp for the initial commit is set to the Unix Epoch
      * (00:00:00 UTC, Thursday, 1 January 1970). Since the initial commit is the same across all repositories created by
      * Gitlet, it will have the same UID, and all commits in all repositories will trace back to it.
-     *
+     * <p>
      * ToDo:make new branch called master and point to initial commit
      */
     public static void init() {
@@ -84,10 +84,10 @@ public class Repository {
         setupPersistence();
 
         Commit initialCommit = new Commit();
-        String headName =initialCommit.saveCommit();
+        String headName = initialCommit.saveCommit();
         // at the initial commit the head and its parent is the same thing
         setHead(headName);
-        parent=getHead();
+        parent = getHead();
 
         // TODO: somehow make master branch
     }
@@ -115,11 +115,11 @@ public class Repository {
         if (isTheSameAsTheCurrentCommit(fileName)) {
             // remove it from staging area
             // and if staged for removal unstage in
-            StagingArea.removeFileFromStagingForAdding(fileName);
-            StagingArea.removeFileFromStagingForRemoving(fileName);
+            StagingArea.unstageFromAdd(fileName);
+            StagingArea.unstageFromRemove(fileName);
 
         } else {
-            StagingArea.addFileToStagingForAdding(file, fileName);
+            StagingArea.stageForAdd(file, fileName);
         }
 
     }
@@ -133,7 +133,7 @@ public class Repository {
      * - Adds the commit as a new node in the commit tree.
      * - Sets the head pointer to point to this new commit.
      * - Updates the parent of the new commit to point to the current head.
-     *
+     * <p>
      * Each commit is identified by its SHA-1 ID, which includes references to its files (blobs),
      * parent reference, log message, and commit time.
      *
@@ -155,7 +155,7 @@ public class Repository {
         Commit commit = new Commit(message, parent, tracked);
         String newHead = commit.saveCommit();
 
-        Blob.addBlobs(StagingArea.getStagedForAdding());
+        Blob.saveBlobs(StagingArea.getStagedForAdding());
 
         StagingArea.clear();
         setHead(newHead);
@@ -168,13 +168,13 @@ public class Repository {
      * The file is only removed if it is tracked in the current commit.
      *
      * @param fileName The name of the file to be removed or unstaged.
-     * */
+     */
     public static void rm(String fileName) {
         if (StagingArea.isStagedForAdding(fileName)) {
-            StagingArea.removeFileFromStagingForAdding(fileName);
+            StagingArea.unstageFromAdd(fileName);
         } else {
             if (trackedByCurrentCommit(fileName)) {
-                StagingArea.addFileToStagingForRemoving(fileName, trackByName.get(fileName));
+                StagingArea.stageForRemove(fileName, trackByName.get(fileName));
                 removeFileFromCWD(fileName);
             }
         }
@@ -186,7 +186,7 @@ public class Repository {
      * commits (similar to `git log --first-parent` in regular Git). This set of commit nodes is called the commit’s history.
      * For every node in this history, the information displayed includes the commit ID, the time the commit was made,
      * and the commit message.:
-     * */
+     */
     public static void log() {
         String current = getHead();
         while (true) {
@@ -204,11 +204,11 @@ public class Repository {
      * Displays the log of all commits in the repository. For each commit, it prints the commit ID,
      * commit message, and commit date in a formatted manner.
      */
-    public static void global_log(){
-        List<String> ls=Utils.plainFilenamesIn(COMMIT_DIR);
-        for(String s : ls){
-           Commit commit= Commit.getCommitByName(s);
-            printCommit(s,commit.getMessage(),commit.getDate());
+    public static void global_log() {
+        List<String> ls = Utils.plainFilenamesIn(COMMIT_DIR);
+        for (String s : ls) {
+            Commit commit = Commit.getCommitByName(s);
+            printCommit(s, commit.getMessage(), commit.getDate());
         }
     }
     /**---------------------------------------------------------------------------find-----------------------------------*/
@@ -239,15 +239,15 @@ public class Repository {
     /**---------------------------------------------------------------------------status---------------------------------*/
     /**
      * * Displays the current status of the repository, including:
-     *  * - Existing branches, with the current branch marked by an asterisk (*).
-     *  * - Files staged for addition.
-     *  * - Files staged for removal.
-     *  * - Modifications not staged for commit.
-     *  * - Untracked files.
-     *  *
-     *  * The output follows a specific format to clearly present the repository's state
-     * */
-    public static void status(){
+     * * - Existing branches, with the current branch marked by an asterisk (*).
+     * * - Files staged for addition.
+     * * - Files staged for removal.
+     * * - Modifications not staged for commit.
+     * * - Untracked files.
+     * *
+     * * The output follows a specific format to clearly present the repository's state
+     */
+    public static void status() {
         printBranches();
 
         printStagedFiles();
@@ -263,88 +263,97 @@ public class Repository {
      * Checkout is a kind of general command that can do a few different things depending on what its arguments are.
      * There are 3 possible use cases. In each section below, you’ll see 3 numbered points. Each corresponds to the
      * respective usage of checkout.
-     *
-     *java gitlet.Main checkout -- [file name]
-     *
+     * <p>
+     * java gitlet.Main checkout -- [file name]
+     * <p>
      * java gitlet.Main checkout [commit id] -- [file name]
-     *
+     * <p>
      * java gitlet.Main checkout [branch name]
-     *Descriptions:
-     *
+     * Descriptions:
+     * <p>
      * Takes the version of the file as it exists in the head commit and puts it in the working directory, overwriting
      * the version of the file that’s already there if there is one. The new version of the file is not staged.
-     *
+     * <p>
      * Takes the version of the file as it exists in the commit with the given id, and puts it in the working directory,
      * overwriting the version of the file that’s already there if there is one. The new version of the file is not staged.
-     *
+     * <p>
      * Takes all files in the commit at the head of the given branch, and puts them in the working directory, overwriting
      * the versions of the files that are already there if they exist. Also, at the end of this command, the given branch
      * will now be considered the current branch (HEAD). Any files that are tracked in the current branch but are not present
      * in the checked-out branch are deleted. The staging area is cleared, unless the checked-out branch is the current branch
      * (see Failure cases below).
-     *Failure cases
+     * Failure cases
      * 1: If the file does not exist in the previous commit, abort, printing the error message File does not exist in that commit. Do not change the CWD.
-     * */
-    public static void checkout(){
+     */
+    public static void checkout() {
 
     }
 
 
-    /**--------------------------------------------------------------------------- helper methods------------------------*/
-   // TODO:fill out this function
-    public static void printBranches(){
+    /**
+     * --------------------------------------------------------------------------- helper methods------------------------
+     */
+    // TODO:fill out this function
+    public static void printBranches() {
         System.out.println("=== Branches ===");
         System.out.println();
-   }
-   public static void printStagedFiles() {
-      System.out.println("=== Staged Files ===");
-     File[] files= StagingArea.getStagedForAdding();
-     for(File f : files){
-         System.out.println(f.getName());
-     }
-     System.out.println();
-   }
-   public static void printRemovedFiles() {
-      System.out.println("=== Removed Files ===");
-      File[] files= StagingArea.getStagedToBeRemoved();
-      for(File f : files){
-          System.out.println(f.getName());
-      }
-      System.out.println();
-   }
+    }
+
+    public static void printStagedFiles() {
+        System.out.println("=== Staged Files ===");
+        File[] files = StagingArea.getStagedForAdding();
+        for (File f : files) {
+            System.out.println(f.getName());
+        }
+        System.out.println();
+    }
+
+    public static void printRemovedFiles() {
+        System.out.println("=== Removed Files ===");
+        File[] files = StagingArea.getStagedToBeRemoved();
+        for (File f : files) {
+            System.out.println(f.getName());
+        }
+        System.out.println();
+    }
+
     // TODO:fill out this function
-   public static void printModificationsNotStagedForCommit() {
+    public static void printModificationsNotStagedForCommit() {
         System.out.println("=== Modifications Not Staged For Commit ===");
         System.out.println();
-   }
+    }
+
     // TODO:fill out this function
-   public static void printUntrackedFiles() {
+    public static void printUntrackedFiles() {
         System.out.println("=== Untracked Files ===");
         System.out.println();
-   }
-   public static boolean trackedByCurrentCommit(String fileName) {
+    }
+
+    public static boolean trackedByCurrentCommit(String fileName) {
         copyTheLastCommitTrackedFiles();
         return trackByName.containsKey(fileName);
 
     }
-   public static void copyTheLastCommitTrackedFiles(){
-       if(isLoaded.containsKey(getHead())){
-           return;
-       }
-       isLoaded.put(getHead(), 1);
-        String commitName=getHead();
-        File f=Utils.join(COMMIT_DIR,commitName);
-        Commit lastCommit=Utils.readObject(f, Commit.class);
 
-        Map<String,String>trackBySha=lastCommit.getTrackBySha();
-        trackByName=lastCommit.getTrackByName();
+    public static void copyTheLastCommitTrackedFiles() {
+        if (isLoaded.containsKey(getHead())) {
+            return;
+        }
+        isLoaded.put(getHead(), 1);
+        String commitName = getHead();
+        File f = Utils.join(COMMIT_DIR, commitName);
+        Commit lastCommit = Utils.readObject(f, Commit.class);
+
+        Map<String, String> trackBySha = lastCommit.getTrackBySha();
+        trackByName = lastCommit.getTrackByName();
 
         // key is the sha of the content of the file with this name(value)
-       for(Map.Entry<String,String> entry: trackBySha.entrySet()){
-           tracked.put(entry.getKey(),entry.getValue());
-       }
-   }
-   public static void printCommit(String name, String message, Date date) {
+        for (Map.Entry<String, String> entry : trackBySha.entrySet()) {
+            tracked.put(entry.getKey(), entry.getValue());
+        }
+    }
+
+    public static void printCommit(String name, String message, Date date) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy Z");
         String formattedDate = dateFormat.format(date);
         System.out.println("===");
@@ -353,50 +362,60 @@ public class Repository {
         System.out.println(message);
         System.out.println();
     }
-   public static void copyFilesFromStagingArea(){
 
-        File[] files=StagingArea.getStagedForAdding();
-        if(files== null || files.length == 0){
+    public static void copyFilesFromStagingArea() {
+
+        File[] files = StagingArea.getStagedForAdding();
+        if (files == null || files.length == 0) {
             errorMessage("No changes added to the commit.");
         }
-        for(File f: files){
-            String contentSha=sha1(ToString(f));
-            tracked.put(contentSha,f.getName());
+        for (File f : files) {
+            String contentSha = sha1(toString(f));
+            tracked.put(contentSha, f.getName());
 
         }
-   }
-   public static void removeFilesThatStagedTobeRemoved(){
+    }
+
+    public static void removeFilesThatStagedTobeRemoved() {
         File[] files = StagingArea.getStagedToBeRemoved();
-        if(files!=null) {
+        if (files != null) {
             for (File f : files) {
-                String contentSha=Utils.readContentsAsString(f);
+                String contentSha = Utils.readContentsAsString(f);
                 tracked.remove(contentSha);
             }
         }
-   }
+    }
 
 
-    /** printing error message. */
+    /**
+     * printing error message.
+     */
     public static void errorMessage(String message) {
         System.err.println(message);
         System.exit(1);
     }
-    /**  Sets up the directory structure and files required. */
-    public static void setupPersistence(){
+
+    /**
+     * Sets up the directory structure and files required.
+     */
+    public static void setupPersistence() {
         GITLET_DIR.mkdirs();
         COMMIT_DIR.mkdirs();
         BLOBS_DIR.mkdirs();
         StagingAreaDir.mkdirs();
         StagingForAdding.mkdirs();
         StagingForRemoving.mkdirs();
-        try{
+        try {
             HEAD.createNewFile();
 
-        }catch (IOException e){
+        } catch (IOException e) {
             errorMessage("Error creating head");
         }
     }
-    /** function that return the head of the current branch. */
+
+    /**
+     * function that return the head of the current branch.
+     */
     public static String getHead() {
         // Check if the head is already cached
         if (head == null) {
@@ -404,40 +423,50 @@ public class Repository {
         }
         return head;
     }
-    /** updating the head. */
-    public static void setHead(String name){
-        Utils.writeContents(HEAD,name);
-        head=name;
+
+    /**
+     * updating the head.
+     */
+    public static void setHead(String name) {
+        Utils.writeContents(HEAD, name);
+        head = name;
     }
+
     /**
      * Knowing if the current working version of the file
      * is identical to the version in the current commit
      */
-    public static boolean isTheSameAsTheCurrentCommit(String fileName){
+    public static boolean isTheSameAsTheCurrentCommit(String fileName) {
         copyTheLastCommitTrackedFiles();
-        File file=new File(CWD, fileName);
-        String contentSha=sha1(ToString(file));
+        File file = new File(CWD, fileName);
+        String contentSha = sha1(toString(file));
         return (tracked.containsKey(contentSha));
     }
-    /** function to check if we initialize a git let directory. */
-    public static boolean isInitialized(){
+
+    /**
+     * function to check if we initialize a git let directory.
+     */
+    public static boolean isInitialized() {
         return GITLET_DIR.exists();
     }
 
     // removing file from current working directory
-    public static void removeFileFromCWD(String fileName){
-        File file=new File(CWD, fileName);
-        if(file.exists()){
+    public static void removeFileFromCWD(String fileName) {
+        File file = new File(CWD, fileName);
+        if (file.exists()) {
             file.delete();
         }
     }
-    /** To Know if the file exist in the current working directory or not*/
-    public static boolean fileExistInCWD(File file){
+
+    /**
+     * To Know if the file exist in the current working directory or not
+     */
+    public static boolean fileExistInCWD(File file) {
         return file.exists();
     }
 
-    public static String ToString(File file){
-        return (Utils.readContentsAsString(file)+file.getName());
+    public static String toString(File file) {
+        return (Utils.readContentsAsString(file) + file.getName());
     }
 
 }

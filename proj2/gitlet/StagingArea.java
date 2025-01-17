@@ -4,66 +4,117 @@ import java.io.File;
 
 public class StagingArea {
 
-    public static File StagingAreaDir=Repository.StagingAreaDir;
-    public static File StagingForAdding=Repository.StagingForAdding;
-    public static File StagingForRemoving=Repository.StagingForRemoving;
+    // Directory for staging files
+    public static final File STAGING_AREA_DIR = Repository.StagingAreaDir;
+    public static final File STAGING_FOR_ADDING = Repository.StagingForAdding;
+    public static final File STAGING_FOR_REMOVING = Repository.StagingForRemoving;
 
-    public   static void addFileToStagingForAdding(File file,String fileName) {
-        // if already exist i override its content
-            File stagedFile= new File(StagingForAdding,fileName);
-            Utils.writeContents(stagedFile,Utils.readContentsAsString(file));
-
-    }
-    public static void addFileToStagingForRemoving(String fileName,String fileContent) {
-        File stagedFile= new File(StagingForRemoving,fileName);
-        Utils.writeContents(stagedFile,fileContent);
-    }
-    public  static void removeFileFromStagingForAdding(String FileName) {
-        //remove file
-        File stagedFile= new File(StagingForAdding,FileName);
-        if(stagedFile.exists()){
-            stagedFile.delete();
-        }
-    }
-    public static void removeFileFromStagingForRemoving(String FileName) {
-        File stagedFile= new File(StagingForRemoving,FileName);
-        if(stagedFile.exists()){
-            stagedFile.delete();
-        }
-    }
-    public  static void StageForRemoving(File file) {
-        File stagedFile= new File(StagingForRemoving,file.getName());
-        Utils.writeContents(stagedFile,Utils.readContentsAsString(file));
-    }
     /**
-     * return the files that staged for adding that will be saved at blobs file and been tracked by next commit
-     * */
-    public static File[] getStagedForAdding(){
-        File[] files= StagingForAdding.listFiles();
-        return files;
+     * Stages a file for addition. If the file already exists in the staging area, it is overwritten.
+     *
+     * @param file     The file to be staged.
+     * @param fileName The name of the file.
+     */
+    public static void stageForAdd(File file, String fileName) {
+        File stagedFile = new File(STAGING_FOR_ADDING, fileName);
+        Utils.writeContents(stagedFile, Utils.readContentsAsString(file));
     }
 
-    public static File[] getStagedToBeRemoved(){
-        File[] files= StagingForRemoving.listFiles();
-        return files;
+    /**
+     * Stages a file for removal.
+     *
+     * @param fileName    The name of the file to be staged for removal.
+     * @param fileContent The content of the file.
+     */
+    public static void stageForRemove(String fileName, String fileContent) {
+        File stagedFile = new File(STAGING_FOR_REMOVING, fileName);
+        Utils.writeContents(stagedFile, fileContent);
     }
+
+    /**
+     * Removes a file from the staging area for addition.
+     *
+     * @param fileName The name of the file to be removed.
+     */
+    public static void unstageFromAdd(String fileName) {
+        removeFile(new File(STAGING_FOR_ADDING, fileName));
+    }
+
+    /**
+     * Removes a file from the staging area for removal.
+     *
+     * @param fileName The name of the file to be removed.
+     */
+    public static void unstageFromRemove(String fileName) {
+        removeFile(new File(STAGING_FOR_REMOVING, fileName));
+    }
+
+    /**
+     * Helper method to remove a file if it exists.
+     *
+     * @param file The file to be removed.
+     */
+    private static void removeFile(File file) {
+        if (file.exists()) {
+            file.delete();
+        }
+    }
+
+    /**
+     * Returns an array of files staged for addition.
+     *
+     * @return An array of files staged for addition, or an empty array if none exist.
+     */
+    public static File[] getStagedForAdding() {
+        if (STAGING_FOR_ADDING.exists()) {
+            return STAGING_FOR_ADDING.listFiles();
+        }
+        return new File[0];
+    }
+
+    /**
+     * Returns an array of files staged for removal.
+     *
+     * @return An array of files staged for removal, or an empty array if none exist.
+     */
+    public static File[] getStagedToBeRemoved() {
+        if (STAGING_FOR_REMOVING.exists()) {
+            return STAGING_FOR_REMOVING.listFiles();
+        }
+        return new File[0];
+    }
+
+    /**
+     * Checks if a file is staged for addition.
+     *
+     * @param fileName The name of the file to check.
+     * @return True if the file is staged for addition, false otherwise.
+     */
     public static boolean isStagedForAdding(String fileName) {
-        File stagedFile= new File(StagingForAdding,fileName);
-        return stagedFile.exists();
+        return new File(STAGING_FOR_ADDING, fileName).exists();
     }
 
     /**
-     * Deletes all files in the StagingForAdding and StagingForRemoving directories.
+     * Clears the staging area by deleting all files staged for addition and removal.
      */
     public static void clear() {
-        File[] toBeAdded = getStagedForAdding();
-        for (File file : toBeAdded) {
-            file.delete();
-        }
-        File[] toBeRemoved = getStagedToBeRemoved();
-        for (File file : toBeRemoved) {
-            file.delete();
-        }
+        clearDirectory(STAGING_FOR_ADDING);
+        clearDirectory(STAGING_FOR_REMOVING);
+    }
 
+    /**
+     * Helper method to clear all files in a directory.
+     *
+     * @param directory The directory to clear.
+     */
+    private static void clearDirectory(File directory) {
+        if (directory.exists()) {
+            File[] files = directory.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    file.delete();
+                }
+            }
+        }
     }
 }
