@@ -24,6 +24,7 @@ public class Blob {
 
         for (File file : files) {
             String fileName = Repository.toString(file);
+            fileName=Utils.sha1(fileName);
             saveBlob(file, fileName);
         }
     }
@@ -47,7 +48,7 @@ public class Blob {
      * @param shaName The SHA-1 name of the blob.
      * @return The blob file, or null if it does not exist.
      */
-    public static File getBlob(String shaName) {
+    public static File getFile(String shaName) {
         File blobFile = new File(BLOB_DIRECTORY, shaName);
         return blobFile.exists() ? blobFile : null;
     }

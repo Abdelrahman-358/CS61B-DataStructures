@@ -21,16 +21,16 @@ public class Commit implements Serializable {
      * variable is used. We've provided one example for `message`.
      */
     /** The message of this Commit. */
-    private String message;
+    private final String message;
     /** the date of this commit. */
-    private Date date;
+    private final Date date;
     /** parent of the commit. */
-    private  String parent;
+    private final String parent;
     /** that contains the referencing files. */
     // Map Store Name -> sha
-    private  Map<String,String> trackByName;
+    private final Map<String,String> trackByName;
     // Map Store sha -> Name
-    private  Map<String,String> trackBySha;
+    private final Map<String,String> trackBySha;
 
     /** initial commit */
     public Commit(){
@@ -52,8 +52,8 @@ public class Commit implements Serializable {
         this.trackBySha = new HashMap<>();
         this.trackByName = new HashMap<>();
         for(Map.Entry<String,String> entry: tracked.entrySet()){
-            trackBySha.put(entry.getKey(),entry.getValue());
-            trackByName.put(entry.getValue(),entry.getKey());
+            trackByName.put(entry.getKey(),entry.getValue());
+            trackBySha.put(entry.getValue(),entry.getKey());
         }
     }
     public String saveCommit(){
@@ -73,7 +73,13 @@ public class Commit implements Serializable {
     }
 
 
+    public  String getTrackedFileByName(String name){
+        return this.trackByName.get(name);
+    }
+
+
     /** getters */
+
     public String getMessage(){
         return this.message;
     }
@@ -88,6 +94,13 @@ public class Commit implements Serializable {
     }
     public Map<String, String> getTrackBySha(){
         return this.trackBySha;
+    }
+    public static boolean commitExists(String commitName){
+        File f=new File(Repository.COMMIT_DIR,commitName);
+        return f.exists();
+    }
+    public boolean isFileTracked(String fileName){
+        return this.trackByName.containsKey(fileName);
     }
     @Override
     public String toString() {

@@ -38,8 +38,21 @@ public class Main {
             case "status":
                 Repository.status();
             case "checkout":
-                Repository.checkout();
+                if(args[1].equals("--")){
+                    // checkout file in the current commit
+                    Repository.checkout(args[2]);
+                }else if(args.length>2){
+                    //checkout  file in specific commit
+                    Repository.checkout(args[1],args[3]);
+                }else {
+                    //checkout branch
+                    Repository.checkoutBranch(args[1]);
+                }
                 break;
+            case "gitHead":
+                Repository.debugging();
+                break;
+
 
         }
     }

@@ -1,5 +1,6 @@
 package gitlet;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.io.File;
@@ -15,7 +16,7 @@ import static gitlet.Utils.*;
  *
  * @author Abdelrahman Mostafa
  */
-public class Repository {
+public class Repository implements Serializable {
     /**
      *
      * List all instance variables of the Repository class here with a useful
@@ -56,15 +57,13 @@ public class Repository {
      */
     public static File StagingForRemoving = join(StagingAreaDir, "stagingForRemoving");
     // public static StagingArea StagingArea = new StagingArea();
-    public static String head = null;
+    public static String head = "no";
     public static String parent;
-    // Map to store BlobName -> and the fileName
-    private static Map<String, String> tracked = new HashMap<>();
     /**
      * track the loaded commits applying lazy load and cashing
      */
     private static Map<String, Integer> isLoaded = new HashMap<>();
-    private static Map<String, String> trackByName = new HashMap<>();
+    private static Map<String, String> trackedByName = new HashMap<>();
     /** ------------------------------------------------------------init command----------------------------------------- */
 
     /**
@@ -115,6 +114,7 @@ public class Repository {
         if (isTheSameAsTheCurrentCommit(fileName)) {
             // remove it from staging area
             // and if staged for removal unstage in
+            System.out.println("exist");
             StagingArea.unstageFromAdd(fileName);
             StagingArea.unstageFromRemove(fileName);
 
@@ -145,20 +145,21 @@ public class Repository {
         }
         // get the files from staging file
         // remove from them the files tha staged to be removed
-        copyTheLastCommitTrackedFiles();
 
+        copyTheLastCommitTrackedFiles();
         copyFilesFromStagingArea();
         removeFilesThatStagedTobeRemoved();
 
         parent = getHead();
 
-        Commit commit = new Commit(message, parent, tracked);
+        Commit commit = new Commit(message, parent, trackedByName);
         String newHead = commit.saveCommit();
 
         Blob.saveBlobs(StagingArea.getStagedForAdding());
 
-        StagingArea.clear();
         setHead(newHead);
+
+        StagingArea.clear();
 
     }
     /**----------------------------------------------------------------------------rm command----------------------------*/
@@ -174,7 +175,7 @@ public class Repository {
             StagingArea.unstageFromAdd(fileName);
         } else {
             if (trackedByCurrentCommit(fileName)) {
-                StagingArea.stageForRemove(fileName, trackByName.get(fileName));
+                StagingArea.stageForRemove(fileName, trackedByName.get(fileName));
                 removeFileFromCWD(fileName);
             }
         }
@@ -285,7 +286,23 @@ public class Repository {
      * Failure cases
      * 1: If the file does not exist in the previous commit, abort, printing the error message File does not exist in that commit. Do not change the CWD.
      */
-    public static void checkout() {
+    public static void checkout(String fileName) {
+        if(!trackedByCurrentCommit(fileName)) {
+            errorMessage("File does not exist in that commit.");
+        }else{
+            loadFileFromCommit(fileName,getHead());
+        }
+    }
+    public static void checkout(String commitName, String fileName) {
+            if(!Commit.commitExists(commitName)) {
+                errorMessage("File does not exist in that commit.");
+            }else if(!trackedByCurrentCommit(fileName)) {
+                errorMessage("File does not exist in that commit.");
+            }else {
+                loadFileFromCommit(fileName,commitName);
+            }
+    }
+    public static void checkoutBranch(String branchName) {
 
     }
 
@@ -293,6 +310,38 @@ public class Repository {
     /**
      * --------------------------------------------------------------------------- helper methods------------------------
      */
+    /**
+     * Loads the contents of a file from a specific commit into the current working directory.
+     *
+     * This method retrieves the specified file from the given commit and writes its contents
+     * to a file with the same name in the current working directory. If the file already exists,
+     * it will be overwritten with the contents from the commit.
+     *
+     * @param fileName    The name of the file to be loaded from the commit.
+     * @param commitName  The name (or hash) of the commit from which the file is to be loaded.
+     */
+    public static void loadFileFromCommit(String fileName,String commitName) {
+        Commit commit = Commit.getCommitByName(commitName);
+        String blobName = commit.getTrackedFileByName(fileName);
+        File file=new File(CWD,fileName);
+        File blob=Blob.getFile(blobName);
+        Utils.writeContents(file, Utils.readContentsAsString(blob));
+    }
+
+    public static void debugging(){
+        System.out.println("head");
+        System.out.println(getHead());
+        Commit commit = Commit.getCommitByName(getHead());
+        System.out.println(commit.getMessage());
+        Map<String,String>m,n=new HashMap<>();
+        m=commit.getTrackByName();
+        n=commit.getTrackBySha();
+
+        System.out.println(m.values());
+        System.out.println(n.values());
+
+    }
+
     // TODO:fill out this function
     public static void printBranches() {
         System.out.println("=== Branches ===");
@@ -328,11 +377,18 @@ public class Repository {
         System.out.println("=== Untracked Files ===");
         System.out.println();
     }
-
+    /**
+     * Knowing if the file with this name is tracked by current commit or not
+     * @return true if yes false otherwise
+     * */
     public static boolean trackedByCurrentCommit(String fileName) {
         copyTheLastCommitTrackedFiles();
-        return trackByName.containsKey(fileName);
+        return trackedByName.containsKey(fileName);
 
+    }
+    public static boolean trackedByCommit(String commitName, String fileName) {
+        Commit commit=Commit.getCommitByName(commitName);
+        return commit.isFileTracked(fileName);
     }
 
     public static void copyTheLastCommitTrackedFiles() {
@@ -345,11 +401,20 @@ public class Repository {
         Commit lastCommit = Utils.readObject(f, Commit.class);
 
         Map<String, String> trackBySha = lastCommit.getTrackBySha();
-        trackByName = lastCommit.getTrackByName();
+        trackedByName = lastCommit.getTrackByName();
 
-        // key is the sha of the content of the file with this name(value)
-        for (Map.Entry<String, String> entry : trackBySha.entrySet()) {
-            tracked.put(entry.getKey(), entry.getValue());
+    }
+    public static void copyFilesFromStagingArea() {
+
+        File[] files = StagingArea.getStagedForAdding();
+        if (files == null || files.length == 0) {
+            errorMessage("No changes added to the commit.");
+        }
+        for (File f : files) {
+            String contentSha = sha1(toString(f));
+
+            trackedByName.put(f.getName(),contentSha);
+
         }
     }
 
@@ -363,25 +428,13 @@ public class Repository {
         System.out.println();
     }
 
-    public static void copyFilesFromStagingArea() {
 
-        File[] files = StagingArea.getStagedForAdding();
-        if (files == null || files.length == 0) {
-            errorMessage("No changes added to the commit.");
-        }
-        for (File f : files) {
-            String contentSha = sha1(toString(f));
-            tracked.put(contentSha, f.getName());
-
-        }
-    }
 
     public static void removeFilesThatStagedTobeRemoved() {
         File[] files = StagingArea.getStagedToBeRemoved();
         if (files != null) {
             for (File f : files) {
-                String contentSha = Utils.readContentsAsString(f);
-                tracked.remove(contentSha);
+                trackedByName.remove(f.getName());
             }
         }
     }
@@ -418,7 +471,7 @@ public class Repository {
      */
     public static String getHead() {
         // Check if the head is already cached
-        if (head == null) {
+        if (head.equals("no")) {
             head = Utils.readContentsAsString(HEAD);
         }
         return head;
@@ -428,7 +481,8 @@ public class Repository {
      * updating the head.
      */
     public static void setHead(String name) {
-        Utils.writeContents(HEAD, name);
+        File file = new File(GITLET_DIR,"heads");
+        Utils.writeContents(file, name);
         head = name;
     }
 
@@ -440,7 +494,7 @@ public class Repository {
         copyTheLastCommitTrackedFiles();
         File file = new File(CWD, fileName);
         String contentSha = sha1(toString(file));
-        return (tracked.containsKey(contentSha));
+        return (contentSha.equals(trackedByName.get(fileName)));
     }
 
     /**
