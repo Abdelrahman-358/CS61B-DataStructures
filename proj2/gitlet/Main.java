@@ -16,18 +16,25 @@ public class Main {
         String firstArg = args[0];
         switch(firstArg) {
             case "init":
+                //initializing gitlet repo
                 Repository.init();
                 break;
             case "add":
+                //add file
                 Repository.add(args[1]);
                 break;
             case "commit":
                 Repository.commit(args[1]);
                 break;
             case "rm":
-                if(args.length == 2)
-                Repository.rm(args[1]);
-                else Repository.rmBranch(args[3]);
+                if(args.length == 2){
+                    //remove file
+                    Repository.rm(args[1]);
+                }
+                else {
+                    //remove branch
+                    Repository.rmBranch(args[3]);
+                }
                 break;
             case "log":
                 Repository.log();
@@ -37,8 +44,10 @@ public class Main {
                 break;
             case "find":
                 Repository.find(args[1]);
+                break;
             case "status":
                 Repository.status();
+                break;
             case "checkout":
                 if(args[1].equals("--")){
                     // checkout file in the current commit

@@ -592,7 +592,7 @@ public class Repository implements Serializable {
     }
 
     /**
-     * function to check if we initialize a git let directory.
+     * function to check if we initialize a gitlet directory.
      */
     public static boolean isInitialized() {
         return GITLET_DIR.exists();
