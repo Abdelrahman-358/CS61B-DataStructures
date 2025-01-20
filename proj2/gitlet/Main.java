@@ -21,10 +21,14 @@ public class Main {
                 break;
             case "add":
                 //add file
+                if(args.length == 2)
                 Repository.add(args[1]);
+                else Repository.errorMessage("not enough arguments");
                 break;
             case "commit":
+                if(args.length == 2)
                 Repository.commit(args[1]);
+                else Repository.errorMessage("Please enter a commit message.");
                 break;
             case "rm":
                 if(args.length == 2){

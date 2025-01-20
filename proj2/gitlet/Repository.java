@@ -181,12 +181,13 @@ public class Repository implements Serializable {
     public static void rm(String fileName) {
         if (StagingArea.isStagedForAdding(fileName)) {
             StagingArea.unstageFromAdd(fileName);
+        } else if (trackedByCurrentCommit(fileName)) {
+            StagingArea.stageForRemove(fileName, trackedByName.get(fileName));
+            removeFileFromCWD(fileName);
         } else {
-            if (trackedByCurrentCommit(fileName)) {
-                StagingArea.stageForRemove(fileName, trackedByName.get(fileName));
-                removeFileFromCWD(fileName);
-            }
+            errorMessage("No reason to remove the file.");
         }
+
     }
     /**----------------------------------------------------------------------------rm-Branch----------------------------*/
     /**
@@ -256,7 +257,6 @@ public class Repository implements Serializable {
                 printCommit(s, commit.getMessage(), commit.getDate());
             }
         }
-
         if (!found) {
             errorMessage("Found no commit with that message.");
         }
