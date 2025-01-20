@@ -25,7 +25,9 @@ public class Main {
                 Repository.commit(args[1]);
                 break;
             case "rm":
+                if(args.length == 2)
                 Repository.rm(args[1]);
+                else Repository.rmBranch(args[3]);
                 break;
             case "log":
                 Repository.log();
@@ -49,9 +51,11 @@ public class Main {
                     Repository.checkoutBranch(args[1]);
                 }
                 break;
-            case "gitHead":
-                Repository.debugging();
+            case "branch":
+                Repository.branch(args[1]);
                 break;
+
+
 
 
         }

@@ -45,6 +45,10 @@ public class Repository implements Serializable {
      */
     public static File HEAD = join(GITLET_DIR, "heads");
     /**
+     * Branches File
+     */
+    public static File BRANCH = join(GITLET_DIR, "branches");
+    /**
      * staging directory that contain staging for adding and staging for removing .
      */
     public static File StagingAreaDir = join(GITLET_DIR, "stagingArea");
@@ -56,9 +60,11 @@ public class Repository implements Serializable {
      * staging for removing directory.
      */
     public static File StagingForRemoving = join(StagingAreaDir, "stagingForRemoving");
+
     // public static StagingArea StagingArea = new StagingArea();
     public static String head = "no";
     public static String parent;
+    public static String currentBranch="no";
     /**
      * track the loaded commits applying lazy load and cashing
      */
@@ -83,12 +89,13 @@ public class Repository implements Serializable {
         setupPersistence();
 
         Commit initialCommit = new Commit();
-        String headName = initialCommit.saveCommit();
+        String commitName = initialCommit.saveCommit();
         // at the initial commit the head and its parent is the same thing
-        setHead(headName);
+        setHead(commitName);
         parent = getHead();
+        updateBranch("master",commitName);
+        updateCurrentBranch("master");
 
-        // TODO: somehow make master branch
     }
     /**--------------------------------------------------------------------------add command-----------------------------*/
     /**
@@ -114,7 +121,6 @@ public class Repository implements Serializable {
         if (isTheSameAsTheCurrentCommit(fileName)) {
             // remove it from staging area
             // and if staged for removal unstage in
-            System.out.println("exist");
             StagingArea.unstageFromAdd(fileName);
             StagingArea.unstageFromRemove(fileName);
 
@@ -161,6 +167,8 @@ public class Repository implements Serializable {
 
         StagingArea.clear();
 
+        updateBranch(getCurrentBranch(),newHead);
+
     }
     /**----------------------------------------------------------------------------rm command----------------------------*/
     /**
@@ -178,6 +186,22 @@ public class Repository implements Serializable {
                 StagingArea.stageForRemove(fileName, trackedByName.get(fileName));
                 removeFileFromCWD(fileName);
             }
+        }
+    }
+    /**----------------------------------------------------------------------------rm-Branch----------------------------*/
+    /**
+     * Deletes the branch with the given name. This operation only removes the pointer associated
+     * with the branch; it does not delete any commits or other data created under the branch.
+     *
+     * @param branchName The name of the branch to delete. Must not be null or empty.
+     */
+    public static void rmBranch(String branchName) {
+        if(!branchExists(branchName)) {
+            errorMessage("A branch with that name does not exist.");
+        }else if(branchName.equals(getCurrentBranch())) {
+            errorMessage("Cannot remove the current branch.");
+        }else{
+            removeBranch(branchName);
         }
     }
     /**----------------------------------------------------------------------------log command---------------------------*/
@@ -305,6 +329,23 @@ public class Repository implements Serializable {
     public static void checkoutBranch(String branchName) {
 
     }
+    /**--------------------------------------------------------------------------- checkout------------------------------*/
+    /**
+     * Description: Creates a new branch with the given name, and points it at the current head commit. A branch is
+     * nothing more than a name for a reference (a SHA-1 identifier) to a commit node. This command does NOT immediately
+     * switch to the newly created branch (just as in real Git). Before you ever call branch, your code should be running
+     * with a default branch called “master”.
+     *
+     * Failure cases: If a branch with the given name already exists, print the error message A branch with that name already exists.
+     * */
+
+    public static void branch(String branchName) {
+        if(branchExists(branchName)) {
+            errorMessage("A branch with that name already exists.");
+        }else{
+            makeNewBranch(branchName);
+        }
+    }
 
 
     /**
@@ -327,25 +368,77 @@ public class Repository implements Serializable {
         File blob=Blob.getFile(blobName);
         Utils.writeContents(file, Utils.readContentsAsString(blob));
     }
-
-    public static void debugging(){
-        System.out.println("head");
-        System.out.println(getHead());
-        Commit commit = Commit.getCommitByName(getHead());
-        System.out.println(commit.getMessage());
-        Map<String,String>m,n=new HashMap<>();
-        m=commit.getTrackByName();
-        n=commit.getTrackBySha();
-
-        System.out.println(m.values());
-        System.out.println(n.values());
-
+    /**
+     * Updates the reference commit for a specific branch in the repository.
+     * This method writes the provided commit reference (`refCommit`) to a file
+     * named after the branch (`branchName`) in the current working directory (CWD).
+     *
+     * @param branchName The name of the branch to update. This will be used as the filename
+     *                   where the commit reference is stored. Must not be null or empty.
+     * @param refCommit  The commit reference (e.g., a commit hash) to associate with the branch.
+     */
+    public static void updateBranch(String branchName,String refCommit){
+        File file=new File(BRANCH,branchName);
+        Utils.writeContents(file,refCommit);
+    }
+    /**
+     * Updates the current branch in the repository to the specified branch name.
+     * This method writes the provided branch name (`branchName`) to a file named
+     * "currentBranch" in the branch directory (`BRANCH`).
+     *
+     * @param branchName The name of the branch to set as the current branch. This will be
+     *                   written to the "currentBranch" file. Must not be null or empty.
+     */
+    public static void updateCurrentBranch(String branchName){
+        File file=new File(GITLET_DIR,"currentBranch");
+        Utils.writeContents(file,branchName);
+    }
+    /**
+     * Retrieves the name of the current branch in the repository.
+     * If the current branch is not already cached (i.e., it is set to "no"),
+     * this method reads the branch name from the "currentBranch" file in the
+     * current working directory (CWD) and caches it for future use.
+     *
+     * @return The name of the current branch. This value is read from the
+     *         "currentBranch" file if not already cached.
+     */
+    public static String getCurrentBranch(){
+        if(currentBranch.equals("no")){
+            File file=new File(GITLET_DIR,"currentBranch");
+            currentBranch=readContentsAsString(file);
+        }
+        return currentBranch;
+    }
+    public static void makeNewBranch(String branchName){
+        File file=new File(BRANCH,branchName);
+        Utils.writeContents(file,getHead());
+    }
+    public static void removeBranch(String branchName){
+        File file=new File(BRANCH,branchName);
+        file.delete();
+    }
+    public static boolean branchExists(String branchName){
+        File file=new File(BRANCH,branchName);
+        return file.exists();
     }
 
     // TODO:fill out this function
     public static void printBranches() {
         System.out.println("=== Branches ===");
+        File[] files = getBranchFiles();
+        for (File f : files) {
+            if(f.getName().equals(getCurrentBranch())){
+                System.out.print("*");
+            }
+            System.out.print(f.getName());
+        }
         System.out.println();
+    }
+    public static File[] getBranchFiles() {
+        if (BRANCH.exists()) {
+            return BRANCH.listFiles();
+        }
+        return new File[0];
     }
 
     public static void printStagedFiles() {
@@ -423,7 +516,7 @@ public class Repository implements Serializable {
         String formattedDate = dateFormat.format(date);
         System.out.println("===");
         System.out.println("commit " + name);
-        System.out.println(formattedDate);
+        System.out.println("Date: "+formattedDate);
         System.out.println(message);
         System.out.println();
     }
@@ -458,6 +551,7 @@ public class Repository implements Serializable {
         StagingAreaDir.mkdirs();
         StagingForAdding.mkdirs();
         StagingForRemoving.mkdirs();
+        BRANCH.mkdirs();
         try {
             HEAD.createNewFile();
 
@@ -511,6 +605,7 @@ public class Repository implements Serializable {
             file.delete();
         }
     }
+
 
     /**
      * To Know if the file exist in the current working directory or not
