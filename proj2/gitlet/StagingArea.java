@@ -1,6 +1,7 @@
 package gitlet;
 
 import java.io.File;
+import java.util.List;
 
 public class StagingArea {
 
@@ -65,11 +66,12 @@ public class StagingArea {
      *
      * @return An array of files staged for addition, or an empty array if none exist.
      */
-    public static File[] getStagedForAdding() {
-        if (STAGING_FOR_ADDING.exists()) {
-            return STAGING_FOR_ADDING.listFiles();
-        }
-        return new File[0];
+    public static List<String> getStagedForAdding() {
+        List<String> list= Utils.plainFilenamesIn(STAGING_FOR_ADDING);
+            return list;
+    }
+    public static File[] getFilesStagedForAddingFiles() {
+       return STAGING_FOR_ADDING.listFiles();
     }
 
     /**
@@ -77,11 +79,9 @@ public class StagingArea {
      *
      * @return An array of files staged for removal, or an empty array if none exist.
      */
-    public static File[] getStagedToBeRemoved() {
-        if (STAGING_FOR_REMOVING.exists()) {
-            return STAGING_FOR_REMOVING.listFiles();
-        }
-        return new File[0];
+    public static List<String> getStagedToBeRemoved() {
+        List<String> list= Utils.plainFilenamesIn(STAGING_FOR_REMOVING);
+        return list;
     }
 
     /**
