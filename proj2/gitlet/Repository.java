@@ -252,7 +252,7 @@ public class Repository implements Serializable {
 
             if (commit.getMessage().equals(message)) {
                 found = true;
-                printCommit(s, commit.getMessage(), commit.getDate());
+                System.out.println(s);
             }
         }
         if (!found) {
