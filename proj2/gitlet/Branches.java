@@ -19,27 +19,8 @@ public class Branches {
 
         File file = new File(BRANCH, branchName);
         String commitName = readContentsAsString(file);
-        Map<String,String> wanted= Repository.getTrackedFilesByCommit(commitName);
-        List<String> CWDFiles=Repository.getCWDFiles();
-        for(String fileName : CWDFiles) {
-            if(!wanted.containsKey(fileName)) {
-                File del=new File(Repository.CWD, fileName);
-                if(del.exists()) {
-                    del.delete();
-                }
-            }
-        }
-        for (Map.Entry<String, String> entry : wanted.entrySet()) {
-            String fileName = entry.getKey();
-            String blobName = entry.getValue();
-
-            File blobFile = new File(Repository.BLOBS_DIR, blobName);
-
-
-            File newFile = new File(Repository.CWD, fileName);
-            Utils.writeContents(newFile, Utils.readContents(blobFile));
-        }
-
+        Commit.loadCommitFiles(commitName);
+        updateCurrentBranch(branchName);
     }
 
     /**

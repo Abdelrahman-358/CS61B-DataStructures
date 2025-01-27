@@ -54,19 +54,20 @@ public class Main {
                 break;
             case "checkout":
                 if(args[1].equals("--")){
-                    // checkout file in the current commit
                     Repository.checkout(args[2]);
                 }else if(args.length>2){
-                    //checkout  file in specific commit
                     Repository.checkout(args[1],args[3]);
                 }else {
-                    //checkout branch
                     Repository.checkoutBranch(args[1]);
                 }
                 break;
             case "branch":
                 Repository.branch(args[1]);
                 break;
+            case "reset":
+                if(args.length == 2)
+                Repository.reset(args[1]);
+                else Repository.errorMessage("not enough arguments");
 
 
 

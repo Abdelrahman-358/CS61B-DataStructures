@@ -79,7 +79,6 @@ public class Repository implements Serializable {
      * (00:00:00 UTC, Thursday, 1 January 1970). Since the initial commit is the same across all repositories created by
      * Gitlet, it will have the same UID, and all commits in all repositories will trace back to it.
      * <p>
-     * ToDo:make new branch called master and point to initial commit
      */
     public static void init() {
         if (isInitialized()) {
@@ -368,6 +367,25 @@ public class Repository implements Serializable {
             Branches.makeNewBranch(branchName);
         }
     }
+    /**--------------------------------------------------------------------------- reset------------------------------*/
+   /**
+    * Description: Checks out all the files tracked by the given commit. Removes tracked files that are not present in that
+    * commit. Also moves the current branch’s head to that commit node. See the intro for an example of what happens to the
+    * head pointer after using reset. The [commit id] may be abbreviated as for checkout. The staging area is cleared. The
+    * command is essentially checkout of an arbitrary commit that also changes the current branch head
+    *
+    *
+    * */
+    public static void reset(String commitName){
+        if(!Commit.commitExists(commitName)){
+            errorMessage("No commit with that id exists.");
+        }else if(thereExistUnTrackedFile()){
+            errorMessage("There is an untracked file in the way; delete it, or add and commit it first.");
+        }else{
+            Commit.loadCommitFiles(commitName);
+            Branches.updateBranch(Branches.getCurrentBranch(), commitName);
+        }
+    }
 
 
     /**
@@ -384,11 +402,7 @@ public class Repository implements Serializable {
      * @param commitName The name (or hash) of the commit from which the file is to be loaded.
      */
     public static void loadFileFromCommit(String fileName, String commitName) {
-        Commit commit = Commit.getCommitByName(commitName);
-        String blobName = commit.getTrackedFileByName(fileName);
-        File file = new File(CWD, fileName);
-        File blob = Blob.getFile(blobName);
-        Utils.writeContents(file, Utils.readContentsAsString(blob));
+        Commit.loadFile( fileName, commitName);
     }
 
     public static void printBranches() {

@@ -6,7 +6,6 @@ import java.util.List;
 public class StagingArea {
 
     // Directory for staging files
-    public static final File STAGING_AREA_DIR = Repository.StagingAreaDir;
     public static final File STAGING_FOR_ADDING = Repository.StagingForAdding;
     public static final File STAGING_FOR_REMOVING = Repository.StagingForRemoving;
 
