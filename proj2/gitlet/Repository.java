@@ -538,7 +538,7 @@ public class Repository implements Serializable {
      */
     public static void errorMessage(String message) {
         System.err.println(message);
-        System.exit(1);
+        System.exit(0);
     }
 
     /**
