@@ -81,6 +81,7 @@ public class Branches {
         if (BRANCH.exists()) {
             return Utils.plainFilenamesIn(BRANCH);
         }
+        return null;
     }
 
 }
