@@ -407,12 +407,12 @@ public class Repository implements Serializable {
 
     public static void printBranches() {
         System.out.println("=== Branches ===");
-        File[] files = Branches.getBranchFiles();
-        for (File f : files) {
-            if (f.getName().equals(Branches.getCurrentBranch())) {
+        List<String>files = Branches.getBranchFiles();
+        for (String f : files) {
+            if (f.equals(Branches.getCurrentBranch())) {
                 System.out.print("*");
             }
-            System.out.print(f.getName());
+            System.out.print(f);
         }
         System.out.println();
     }

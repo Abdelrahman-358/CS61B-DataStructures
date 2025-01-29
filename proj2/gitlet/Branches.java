@@ -77,11 +77,10 @@ public class Branches {
         return file.exists();
     }
 
-    public static File[] getBranchFiles() {
+    public static List<String> getBranchFiles() {
         if (BRANCH.exists()) {
-            return BRANCH.listFiles();
+            return Utils.plainFilenamesIn(BRANCH);
         }
-        return new File[0];
     }
 
 }
