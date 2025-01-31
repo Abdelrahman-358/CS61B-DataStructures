@@ -3,10 +3,7 @@ package gitlet;
 
 import java.io.File;
 import java.io.Serializable;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Represents a gitlet commit object.
@@ -49,8 +46,8 @@ public class Commit implements Serializable {
         this.message = "initial commit";
         this.date = new Date(0);
         this.parent = "stop";
-        this.trackByName = new HashMap<>();
-        this.trackBySha = new HashMap<>();
+        this.trackByName = new TreeMap<>();;
+        this.trackBySha = new TreeMap<>();;
 
     }
 
@@ -62,8 +59,8 @@ public class Commit implements Serializable {
         this.date = new Date();
         this.parent = parent;
         // tacked sha -> file
-        this.trackBySha = new HashMap<>();
-        this.trackByName = new HashMap<>();
+        this.trackBySha = new TreeMap<>();;
+        this.trackByName = new TreeMap<>();;
         for (Map.Entry<String, String> entry : tracked.entrySet()) {
             trackByName.put(entry.getKey(), entry.getValue());
             trackBySha.put(entry.getValue(), entry.getKey());

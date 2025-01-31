@@ -69,6 +69,9 @@ public class StagingArea {
         List<String> list= Utils.plainFilenamesIn(STAGING_FOR_ADDING);
             return list;
     }
+    public static boolean isAddingStageEmpty() {
+        return STAGING_FOR_ADDING.listFiles().length == 0;
+    }
     public static File[] getFilesStagedForAddingFiles() {
        return STAGING_FOR_ADDING.listFiles();
     }
@@ -81,6 +84,9 @@ public class StagingArea {
     public static List<String> getStagedToBeRemoved() {
         List<String> list= Utils.plainFilenamesIn(STAGING_FOR_REMOVING);
         return list;
+    }
+    public static boolean isRemovalStageEmpty() {
+        return STAGING_FOR_REMOVING.listFiles().length == 0;
     }
 
     /**

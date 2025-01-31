@@ -68,8 +68,10 @@ public class Main {
                 if(args.length == 2)
                 Repository.reset(args[1]);
                 else Repository.errorMessage("not enough arguments");
-
-
+                break;
+            case "merge":
+                Repository.merge(args[1]);
+                break;
 
 
         }
