@@ -1,8 +1,9 @@
 package gitlet;
 
+import jdk.jshell.execution.Util;
+
 import java.io.File;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static gitlet.Utils.readContentsAsString;
 
@@ -15,12 +16,90 @@ public class Branches {
         File file = new File(BRANCH, branchName);
         Utils.writeContents(file, Repository.getHead());
     }
+
     public static void loadBranch(String branchName) {
 
         File file = new File(BRANCH, branchName);
         String commitName = readContentsAsString(file);
         Commit.loadCommitFiles(commitName);
         updateCurrentBranch(branchName);
+    }
+
+    /**
+     * 1-if the file modified in the given branch since the split point and not modified in the current modify it and stage it
+     * 2-if the file modified in the current branch since the split point  but not in the given branch  stay as it is.
+     * 3-if the file modified in both current and given as the same way is left unchanged by the merge. and if it removed but there exist a file with the same name
+     * that file is left alone not tracked nor staged in the merge
+     * 4-if the file that was not present at the split point and are present only in the current branch it remains the same
+     * 5-if the file that was not present at the split point and are present only in the given branch it checked out and staged
+     * 6-if the file present at the split point unmodified it the current branch and absent in the given branch should be removed
+     * 7-if the file present at the split point unmodified in the given branch and absent in the current branch should remain absent
+     */
+    public static void mergeBranch(String branchName) {
+        File file = new File(BRANCH, branchName);
+        String branchCommitName = readContentsAsString(file);
+        Commit currentCommit = Commit.getCommitByName(Repository.getHead());
+        Commit givenCommit = Commit.getCommitByName(branchCommitName);
+        Commit splitCommit = Commit.getLowestCommonAncestor(Repository.getHead(), branchCommitName);
+        if (splitCommit.equals(givenCommit)) {
+            Repository.errorMessage("");
+        }
+        if (splitCommit.equals(currentCommit)) {
+            Repository.errorMessage("");
+        }
+        Set<String> files = new HashSet<String>();
+        boolean conflict = false;
+        files.addAll(currentCommit.getTrackByName().keySet());
+        files.addAll(givenCommit.getTrackByName().keySet());
+        files.addAll(splitCommit.getTrackByName().keySet());
+        for (String fileName : files) {
+            String current = currentCommit.getTrackByName().get(fileName);
+            String given = givenCommit.getTrackByName().get(fileName);
+            String split = splitCommit.getTrackByName().get(fileName);
+            if (given != null && split != null && split.equals(current) && !split.equals(given)) {
+                // load the file from given commit and stage it for addition
+                Repository.loadFile(fileName, branchCommitName);
+                File updated = Blob.getFile(splitCommit.getTrackByName().get(fileName));
+                StagingArea.stageForAdd(updated, fileName);
+            }
+            if (split != null && current != null && !split.equals(current) && split.equals(given)) {
+                // load file from current
+                Repository.loadFile(fileName, Repository.getHead());
+            }
+            if (split == null && given == null && current != null) {
+                //load file from current
+                Repository.loadFile(fileName, Repository.getHead());
+            }
+            if (split == null && current == null && given != null) {
+                // load it from given and stage it for addition
+                Repository.loadFile(fileName, branchCommitName);
+                File updated = Blob.getFile(splitCommit.getTrackByName().get(fileName));
+                StagingArea.stageForAdd(updated, fileName);
+            }
+            if (split != null && given == null && split.equals(current)) {
+                // remove it from current and stage it for removal
+                Repository.removeFileFromCWD(fileName);
+                StagingArea.stageForRemove(fileName, currentCommit.getTrackByName().get(fileName));
+            }
+            if (split != null && current == null && split.equals(given)) {
+                // do nothing
+            }
+            if (!Objects.equals(split, current) && !Objects.equals(current, given) && !Objects.equals(split, given)) {
+                // conflict
+                conflict = true;
+                String currentContent = readContentsAsString(Blob.getFile(currentCommit.getTrackByName().get(fileName)));
+                String givenContent = readContentsAsString(Blob.getFile(givenCommit.getTrackByName().get(fileName)));
+                String finalContent = "<<<<<<< HEAD\n" + currentContent + "=======\n" + givenContent + ">>>>>>>\n";
+                File newFile = new File(Repository.CWD, fileName);
+                Utils.writeContents(newFile, finalContent);
+                StagingArea.stageForAdd(newFile, fileName);
+            }
+        }
+        String commitMessage = "Merged " + branchName + " into " + getCurrentBranch() + ".";
+        Repository.commit(commitMessage);
+        if (conflict) {
+            Repository.errorMessage("Encountered a merge conflict.");
+        }
     }
 
     /**

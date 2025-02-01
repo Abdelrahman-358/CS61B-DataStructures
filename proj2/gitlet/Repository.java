@@ -36,6 +36,7 @@ public class Repository implements Serializable {
      * commits directory
      */
     public static final File COMMIT_DIR = join(GITLET_DIR, "commits");
+    public static final File commitTree =join(COMMIT_DIR, "commitTree");
     /**
      * blobs directory
      */
@@ -61,9 +62,9 @@ public class Repository implements Serializable {
      */
     public static File StagingForRemoving = join(StagingAreaDir, "stagingForRemoving");
 
-    // public static StagingArea StagingArea = new StagingArea();
     public static String head = "no";
-    public static String parent;
+    // last commit
+    public static String firstParent;
     /**
      * track the loaded commits applying lazy load and cashing
      */
@@ -90,7 +91,6 @@ public class Repository implements Serializable {
         String commitName = initialCommit.saveCommit();
         // at the initial commit the head and its parent is the same thing
         setHead(commitName);
-        parent = getHead();
         Branches.updateBranch("master", commitName);
         Branches.updateCurrentBranch("master");
 
@@ -154,9 +154,9 @@ public class Repository implements Serializable {
         copyFilesFromStagingArea();
         removeFilesThatStagedTobeRemoved();
 
-        parent = getHead();
+        firstParent = getHead();
 
-        Commit commit = new Commit(message, parent, trackedByName);
+        Commit commit = new Commit(message, firstParent,firstParent, trackedByName);
         String newHead = commit.saveCommit();
 
         Blob.saveBlobs(StagingArea.getFilesStagedForAddingFiles());
@@ -216,8 +216,8 @@ public class Repository implements Serializable {
         while (true) {
             Commit commit = Commit.getCommitByName(current);
             printCommit(current, commit.getMessage(), commit.getDate());
-            String par = commit.getParent();
-            if (par.equals("stop") || current.equals(par)) {
+            String par = commit.getFirstParent();
+            if ( Objects.equals(par,null)) {
                 break;
             }
             current = par;
@@ -312,7 +312,7 @@ public class Repository implements Serializable {
         if (!trackedByCurrentCommit(fileName)) {
             errorMessage("File does not exist in that commit.");
         } else {
-            loadFileFromCommit(fileName, getHead());
+            loadFile(fileName, getHead());
         }
     }
 
@@ -322,7 +322,7 @@ public class Repository implements Serializable {
         } else if (!trackedByCurrentCommit(fileName)) {
             errorMessage("File does not exist in that commit.");
         } else {
-            loadFileFromCommit(fileName, commitName);
+            loadFile(fileName, commitName);
         }
     }
     /**
@@ -414,11 +414,16 @@ public class Repository implements Serializable {
      * and the other file is deleted, or the file was absent at the split point and has different contents in the given
      * and current branches. In this case, replace the contents of the conflicted file with
      *
-     * Failure cases: If there are staged additions or removals present, print the error message You have uncommitted
-     * changes. and exit. If a branch with the given name does not exist, print the error message A branch with that
-     * name does not exist. If attempting to merge a branch with itself, print the error message Cannot merge a branch
-     * with itself. If merge would generate an error because the commit that it does has no changes in it, just let the
-     * normal commit error message for this go through. If an untracked file in the current commit would be overwritten
+     * Failure cases:
+     * If there are staged additions or removals present, print the error message You have uncommitted
+     * changes. and exit.
+     * If a branch with the given name does not exist, print the error message A branch with that
+     * name does not exist.
+     * If attempting to merge a branch with itself, print the error message Cannot merge a branch
+     * with itself.
+     * If merge would generate an error because the commit that it does has no changes in it, just let the
+     * normal commit error message for this go through.
+     * If an untracked file in the current commit would be overwritten
      * or deleted by the merge, print There is an untracked file in the way; delete it, or add and commit it first. and
      * exit; perform this check before doing anything else.
      * */
@@ -429,10 +434,13 @@ public class Repository implements Serializable {
             errorMessage("A branch with that name does not exist.");
         } else if (Branches.getCurrentBranch().equals(branchName)) {
             errorMessage("Cannot merge a branch with itself.");
+        } else {
+            // handle merge commit has no changes in it
+            // handle untracked files error
+            Branches.mergeBranch(branchName);
         }
 
     }
-
 
     /**
      * --------------------------------------------------------------------------- helper methods------------------------
@@ -447,8 +455,13 @@ public class Repository implements Serializable {
      * @param fileName   The name of the file to be loaded from the commit.
      * @param commitName The name (or hash) of the commit from which the file is to be loaded.
      */
-    public static void loadFileFromCommit(String fileName, String commitName) {
-        Commit.loadFile( fileName, commitName);
+
+    public static void loadFile(String fileName, String commitName) {
+            Commit commit = Commit.getCommitByName(commitName);
+            String blobName = commit.getTrackedFileByName(fileName);
+            File file = new File(Repository.CWD, fileName);
+            File blob = Blob.getFile(blobName);
+            Utils.writeContents(file, Utils.readContentsAsString(blob));
     }
 
     public static void printBranches() {

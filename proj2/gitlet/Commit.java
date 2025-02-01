@@ -23,6 +23,7 @@ public class Commit implements Serializable {
      * The message of this Commit.
      */
     private final String message;
+    private String name = null;
     /**
      * the date of this commit.
      */
@@ -30,7 +31,8 @@ public class Commit implements Serializable {
     /**
      * parent of the commit.
      */
-    private final String parent;
+    private final String firstParent;
+    private final String secondParent;
     /**
      * that contains the referencing files.
      */
@@ -45,22 +47,26 @@ public class Commit implements Serializable {
     public Commit() {
         this.message = "initial commit";
         this.date = new Date(0);
-        this.parent = "stop";
-        this.trackByName = new TreeMap<>();;
-        this.trackBySha = new TreeMap<>();;
+        this.firstParent = null;
+        this.secondParent = null;
+        this.trackByName = new TreeMap<>();
+        this.trackBySha = new TreeMap<>();
 
     }
 
-    public Commit(String message, String parent, Map<String, String> tracked) {
+    public Commit(String message, String firstParent, String secondParent, Map<String, String> tracked) {
         if (message == null) {
             Repository.errorMessage("Please enter a commit message.");
         }
         this.message = message;
         this.date = new Date();
-        this.parent = parent;
+        this.firstParent = firstParent;
+        this.secondParent = secondParent;
         // tacked sha -> file
-        this.trackBySha = new TreeMap<>();;
-        this.trackByName = new TreeMap<>();;
+        this.trackBySha = new TreeMap<>();
+        ;
+        this.trackByName = new TreeMap<>();
+        ;
         for (Map.Entry<String, String> entry : tracked.entrySet()) {
             trackByName.put(entry.getKey(), entry.getValue());
             trackBySha.put(entry.getValue(), entry.getKey());
@@ -72,21 +78,21 @@ public class Commit implements Serializable {
         String name = Utils.sha1(this.toString());
         File f = new File(Repository.COMMIT_DIR, name);
         Utils.writeObject(f, this);
+        this.name = name;
         return name;
     }
+
     /**
      * Loads the files associated with a specific commit into the current working directory (CWD).
      * This function performs the following operations:
-     *
-     *   Retrieves the tracked files for the given commit using {@link Repository#getTrackedFilesByCommit(String)}.
-     *   Retrieves the list of files currently present in the CWD using {@link Repository#getCWDFiles()}.
-     *   Deletes any files in the CWD that are not part of the tracked files for the specified commit.
-     *   Writes the contents of the tracked files (blobs) from the commit into the corresponding files in the CWD.
-     *
+     * <p>
+     * Retrieves the tracked files for the given commit using {@link Repository#getTrackedFilesByCommit(String)}.
+     * Retrieves the list of files currently present in the CWD using {@link Repository#getCWDFiles()}.
+     * Deletes any files in the CWD that are not part of the tracked files for the specified commit.
+     * Writes the contents of the tracked files (blobs) from the commit into the corresponding files in the CWD.
      *
      * @param commitName The name of the commit whose files are to be loaded into the CWD.
      *                   This should correspond to a valid commit in the repository.
-     *
      * @see Repository#getTrackedFilesByCommit(String)
      * @see Repository#getCWDFiles()
      */
@@ -113,12 +119,34 @@ public class Commit implements Serializable {
         }
     }
 
-    public static void loadFile(String fileName, String commitName) {
-        Commit commit = getCommitByName(commitName);
-        String blobName = commit.getTrackedFileByName(fileName);
-        File file = new File(Repository.CWD, fileName);
-        File blob = Blob.getFile(blobName);
-        Utils.writeContents(file, Utils.readContentsAsString(blob));
+
+    public static Commit getLowestCommonAncestor(String firstCommit, String secondCommit) {
+        Commit first = Commit.getCommitByName(firstCommit);
+        List<Commit> firstAncestors = new ArrayList<>();
+        dfs(first, firstAncestors, new HashSet<>());
+        Commit second = Commit.getCommitByName(secondCommit);
+        List<Commit> secondAncestors = new ArrayList<>();
+        dfs(second, secondAncestors, new HashSet<>());
+        Commit split = null;
+        for (Commit c : firstAncestors) {
+            if (secondAncestors.contains(c) && (split == null || split.date.before(c.date))) {
+                split = c;
+            }
+        }
+        return split;
+    }
+
+    public static void dfs(Commit current, List<Commit> list, Set<String> visited) {
+        list.add(current);
+        visited.add(current.getName());
+        String first = current.getFirstParent();
+        if (first != null && !visited.contains(first)) {
+            dfs(getCommitByName(first), list, visited);
+        }
+        String second = current.secondParent;
+        if (second != null && !visited.contains(second)) {
+            dfs(getCommitByName(second), list, visited);
+        }
     }
 
 
@@ -130,6 +158,7 @@ public class Commit implements Serializable {
         Commit commit = Utils.readObject(f, Commit.class);
         return commit;
     }
+
     public static boolean commitExists(String commitName) {
         File f = new File(Repository.COMMIT_DIR, commitName);
         return f.exists();
@@ -141,16 +170,25 @@ public class Commit implements Serializable {
     public String getTrackedFileByName(String name) {
         return this.trackByName.get(name);
     }
+
     public String getMessage() {
         return this.message;
+    }
+
+    public String getName() {
+        return this.name;
     }
 
     public Date getDate() {
         return this.date;
     }
 
-    public String getParent() {
-        return this.parent;
+    public String getFirstParent() {
+        return this.firstParent;
+    }
+
+    public String secondParent() {
+        return this.secondParent;
     }
 
     public Map<String, String> getTrackByName() {
@@ -170,7 +208,8 @@ public class Commit implements Serializable {
         StringBuilder sb = new StringBuilder();
         sb.append("Message: ").append(message).append("\n");
         sb.append("Date: ").append(date).append("\n");
-        sb.append("Parent: ").append(parent).append("\n");
+        sb.append("firstParent: ").append(firstParent).append("\n");
+        sb.append("secondParent: ").append(secondParent).append("\n");
         sb.append("Tracked Files:\n");
         for (Map.Entry<String, String> entry : trackBySha.entrySet()) {
             sb.append("  ").append(entry.getKey()).append("\n");
