@@ -11,8 +11,6 @@ public class Main {
     public static void main(String[] args) {
         // TODO: what if args is empty?
         // TODO: handle errors that related to args size
-        // ToDo: you must not store files at commit you must just store the name of the blobs and
-        //     get them from blob file
         String firstArg = args[0];
         switch(firstArg) {
             case "init":

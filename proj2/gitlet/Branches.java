@@ -1,6 +1,5 @@
 package gitlet;
 
-import jdk.jshell.execution.Util;
 
 import java.io.File;
 import java.util.*;
@@ -42,10 +41,12 @@ public class Branches {
         Commit givenCommit = Commit.getCommitByName(branchCommitName);
         Commit splitCommit = Commit.getLowestCommonAncestor(Repository.getHead(), branchCommitName);
         if (splitCommit.equals(givenCommit)) {
-            Repository.errorMessage("");
+            Repository.errorMessage("Given branch is an ancestor of the current branch.");
         }
         if (splitCommit.equals(currentCommit)) {
-            Repository.errorMessage("");
+            Repository.checkoutBranch(branchName);
+            System.out.println("Current branch fast-forwarded.");
+            return;
         }
         Set<String> files = new HashSet<String>();
         boolean conflict = false;

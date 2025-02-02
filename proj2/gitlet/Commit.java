@@ -129,7 +129,7 @@ public class Commit implements Serializable {
         dfs(second, secondAncestors, new HashSet<>());
         Commit split = null;
         for (Commit c : firstAncestors) {
-            if (secondAncestors.contains(c) && (split == null || split.date.before(c.date))) {
+            if (secondAncestors.contains(c) && (Objects.equals(split , null) || split.date.before(c.date))) {
                 split = c;
             }
         }

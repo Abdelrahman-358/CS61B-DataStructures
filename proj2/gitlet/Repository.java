@@ -261,14 +261,14 @@ public class Repository implements Serializable {
     }
     /**---------------------------------------------------------------------------status---------------------------------*/
     /**
-     * * Displays the current status of the repository, including:
-     * * - Existing branches, with the current branch marked by an asterisk (*).
-     * * - Files staged for addition.
-     * * - Files staged for removal.
-     * * - Modifications not staged for commit.
-     * * - Untracked files.
-     * *
-     * * The output follows a specific format to clearly present the repository's state
+     * Displays the current status of the repository, including:
+     * - Existing branches, with the current branch marked by an asterisk (*).
+     * - Files staged for addition.
+     * - Files staged for removal.
+     * - Modifications not staged for commit.
+     * - Untracked files.
+     *
+     *  The output follows a specific format to clearly present the repository's state
      */
     public static void status() {
         printBranches();
