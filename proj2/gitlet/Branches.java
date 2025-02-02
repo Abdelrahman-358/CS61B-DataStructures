@@ -57,12 +57,14 @@ public class Branches {
             String current = currentCommit.getTrackByName().get(fileName);
             String given = givenCommit.getTrackByName().get(fileName);
             String split = splitCommit.getTrackByName().get(fileName);
+            // 1-if the file modified in the given branch since the split point and not modified in the current modify it and stage it
             if (given != null && split != null && split.equals(current) && !split.equals(given)) {
                 // load the file from given commit and stage it for addition
                 Repository.loadFile(fileName, branchCommitName);
                 File updated = Blob.getFile(splitCommit.getTrackByName().get(fileName));
                 StagingArea.stageForAdd(updated, fileName);
             }
+           // 2-if the file modified in the current branch since the split point  but not in the given branch  stay as it is.
             if (split != null && current != null && !split.equals(current) && split.equals(given)) {
                 // load file from current
                 Repository.loadFile(fileName, Repository.getHead());
@@ -99,7 +101,7 @@ public class Branches {
         String commitMessage = "Merged " + branchName + " into " + getCurrentBranch() + ".";
         Repository.commit(commitMessage);
         if (conflict) {
-            Repository.errorMessage("Encountered a merge conflict.");
+            System.out.println("Encountered a merge conflict.");
         }
     }
 
