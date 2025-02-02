@@ -151,8 +151,11 @@ public class Repository implements Serializable {
         // remove from them the files tha staged to be removed
 
         copyTheLastCommitTrackedFiles();
-        copyFilesFromStagingArea();
-        removeFilesThatStagedTobeRemoved();
+       boolean x= copyFilesFromStagingArea();
+       boolean y= removeFilesThatStagedTobeRemoved();
+
+       if(!x & !y)
+           errorMessage("No changes added to the commit.");
 
         firstParent = getHead();
 
@@ -540,11 +543,11 @@ public class Repository implements Serializable {
 
     }
 
-    public static void copyFilesFromStagingArea() {
+    public static boolean copyFilesFromStagingArea() {
 
         File[] files = StagingArea.getFilesStagedForAddingFiles();
         if (files == null || files.length == 0) {
-            errorMessage("No changes added to the commit.");
+            return false;
         }
         for (File f : files) {
             String contentSha = sha1(toString(f));
@@ -552,6 +555,7 @@ public class Repository implements Serializable {
             trackedByName.put(f.getName(), contentSha);
 
         }
+        return true;
     }
 
     public static void printCommit(String name, String message, Date date) {
@@ -565,13 +569,15 @@ public class Repository implements Serializable {
     }
 
 
-    public static void removeFilesThatStagedTobeRemoved() {
+    public static boolean removeFilesThatStagedTobeRemoved() {
         List<String> files = StagingArea.getStagedToBeRemoved();
-        if (files != null) {
+        if (files.size()>0) {
             for (String f : files) {
                 trackedByName.remove(f);
             }
+            return true;
         }
+        return false;
     }
 
 
