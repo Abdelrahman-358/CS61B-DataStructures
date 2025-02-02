@@ -87,9 +87,7 @@ public class Branches {
             if (split != null && current == null && split.equals(given)) {
                 // do nothing
             }
-            if ((split != null && !split.equals(current)) &&
-                    (current != null && !current.equals(given)) &&
-                    (split != null && !split.equals(given))) {
+            if (!Objects.equals(split, current) && !Objects.equals(current, given) && !Objects.equals(split, given)) {
                 // conflict
                 conflict = true;
                 String currentContent = readContentsAsString(Blob.getFile(currentCommit.getTrackByName().get(fileName)));

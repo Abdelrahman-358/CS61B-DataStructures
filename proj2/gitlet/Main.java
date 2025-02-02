@@ -24,7 +24,7 @@ public class Main {
                 else Repository.errorMessage("not enough arguments");
                 break;
             case "commit":
-                if(args.length == 2)
+                if(args.length == 2 && args[1]!="")
                 Repository.commit(args[1]);
                 else Repository.errorMessage("Please enter a commit message.");
                 break;

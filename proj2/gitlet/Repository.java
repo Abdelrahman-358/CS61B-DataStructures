@@ -343,10 +343,9 @@ public class Repository implements Serializable {
             errorMessage("No such branch exists.");
         } else if (branchName.equals(Branches.getCurrentBranch())) {
             errorMessage("No need to checkout the current branch.");
+        } else if (thereExistUnTrackedFile()) {
+            errorMessage("There is an untracked file in the way; delete it, or add and commit it first.");
         }
-//        } else if (thereExistUnTrackedFile()) {
-//            errorMessage("There is an untracked file in the way; delete it, or add and commit it first.");
-//        }
         else {
             Branches.loadBranch(branchName);
         }
