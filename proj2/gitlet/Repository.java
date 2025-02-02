@@ -318,7 +318,7 @@ public class Repository implements Serializable {
 
     public static void checkout(String commitName, String fileName) {
         if (!Commit.commitExists(commitName)) {
-            errorMessage("File does not exist in that commit.");
+            errorMessage("No commit with that id exists.");
         } else if (!trackedByCurrentCommit(fileName)) {
             errorMessage("File does not exist in that commit.");
         } else {
