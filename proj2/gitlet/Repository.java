@@ -475,7 +475,7 @@ public class Repository implements Serializable {
             if (f.equals(Branches.getCurrentBranch())) {
                 System.out.print("*");
             }
-            System.out.print(f);
+            System.out.println(f);
         }
         System.out.println();
     }
