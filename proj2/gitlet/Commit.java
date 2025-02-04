@@ -4,6 +4,7 @@ package gitlet;
 import java.io.File;
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Represents a gitlet commit object.
@@ -12,7 +13,7 @@ import java.util.*;
  *
  * @author Abdelrahman Mostafa
  */
-public class Commit implements Serializable {
+public class Commit implements Serializable  {
     /**
      *
      * List all instance variables of the Commit class here with a useful
@@ -77,8 +78,8 @@ public class Commit implements Serializable {
 
         String name = Utils.sha1(this.toString());
         File f = new File(Repository.COMMIT_DIR, name);
-        Utils.writeObject(f, this);
         this.name = name;
+        Utils.writeObject(f, this);
         return name;
     }
 
@@ -121,31 +122,32 @@ public class Commit implements Serializable {
 
 
     public static Commit getLowestCommonAncestor(String firstCommit, String secondCommit) {
-        Commit first = Commit.getCommitByName(firstCommit);
-        List<Commit> firstAncestors = new ArrayList<>();
-        dfs(first, firstAncestors, new HashSet<>());
-        Commit second = Commit.getCommitByName(secondCommit);
-        List<Commit> secondAncestors = new ArrayList<>();
-        dfs(second, secondAncestors, new HashSet<>());
-        Commit split = null;
-        for (Commit c : firstAncestors) {
-            if (secondAncestors.contains(c) && (Objects.equals(split , null) || split.date.before(c.date))) {
-                split = c;
-            }
-        }
+        Commit first=Commit.getCommitByName(firstCommit);
+        Commit second=Commit.getCommitByName(secondCommit);
+        Set<String>set =getCommitList(first).stream().map(Commit::getName).collect(Collectors.toSet());
+        Commit split = getCommitList(second).stream()
+                .filter(commit -> set.contains(commit.getName()))
+                .max(Comparator.comparing(Commit::getDate))
+                .orElse(null);
+     
         return split;
     }
+    public static List<Commit> getCommitList(Commit commit) {
+        List<Commit> ans = new ArrayList<>();
+        dfs(commit, new HashSet<>(),ans);
+        return ans;
+    }
 
-    public static void dfs(Commit current, List<Commit> list, Set<String> visited) {
+    public static void dfs(Commit current, Set<String> visited,  List<Commit>list ) {
         list.add(current);
         visited.add(current.getName());
         String first = current.getFirstParent();
         if (first != null && !visited.contains(first)) {
-            dfs(getCommitByName(first), list, visited);
+            dfs(getCommitByName(first), visited, list);
         }
-        String second = current.secondParent;
+        String second = current.getSecondParent();
         if (second != null && !visited.contains(second)) {
-            dfs(getCommitByName(second), list, visited);
+            dfs(getCommitByName(second), visited, list);
         }
     }
 
@@ -187,7 +189,7 @@ public class Commit implements Serializable {
         return this.firstParent;
     }
 
-    public String secondParent() {
+    public String getSecondParent() {
         return this.secondParent;
     }
 

@@ -449,6 +449,15 @@ public class Repository implements Serializable {
     /**
      * --------------------------------------------------------------------------- helper methods------------------------
      */
+
+    public static void get(String branchName) {
+        if (!Branches.branchExists(branchName)) {
+            errorMessage("No such branch.");
+        }
+        File f=new File(BRANCH,branchName);
+        Commit.getLowestCommonAncestor(getHead(),Utils.readContentsAsString(f));
+    }
+
     /**
      * Loads the contents of a file from a specific commit into the current working directory.
      * <p>

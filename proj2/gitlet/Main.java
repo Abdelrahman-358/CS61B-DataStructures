@@ -70,6 +70,9 @@ public class Main {
             case "merge":
                 Repository.merge(args[1]);
                 break;
+            case "get":
+                Repository.get(args[1]);
+                break;
 
 
         }
