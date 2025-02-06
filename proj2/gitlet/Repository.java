@@ -630,7 +630,7 @@ public class Repository implements Serializable {
 
     public static boolean thereExistUnTrackedFile() {
 
-          return false;
+          return (getUntrackedFiles().size() != 0);
     }
     public static List<String> getCWDFiles(){
         return Utils.plainFilenamesIn(CWD);

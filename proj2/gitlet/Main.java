@@ -55,8 +55,10 @@ public class Main {
                     Repository.checkout(args[2]);
                 }else if(args.length>2){
                     Repository.checkout(args[1],args[3]);
-                }else {
+                }else if(args.length==2) {
                     Repository.checkoutBranch(args[1]);
+                }else{
+                    Repository.errorMessage("Incorrect operands.");
                 }
                 break;
             case "branch":
