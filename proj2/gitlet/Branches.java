@@ -40,10 +40,10 @@ public class Branches {
         Commit currentCommit = Commit.getCommitByName(Repository.getHead());
         Commit givenCommit = Commit.getCommitByName(branchCommitName);
         Commit splitCommit = Commit.getLowestCommonAncestor(Repository.getHead(), branchCommitName);
-        if (splitCommit!=null && splitCommit.equals(givenCommit)) {
+        if (splitCommit != null && splitCommit.equals(givenCommit)) {
             Repository.errorMessage("Given branch is an ancestor of the current branch.");
         }
-        if (splitCommit !=null && splitCommit.equals(currentCommit)) {
+        if (splitCommit != null && splitCommit.equals(currentCommit)) {
             Repository.checkoutBranch(branchName);
             System.out.println("Current branch fast-forwarded.");
             return;
@@ -64,30 +64,25 @@ public class Branches {
                 File updated = Blob.getFile(splitCommit.getTrackByName().get(fileName));
                 StagingArea.stageForAdd(updated, fileName);
             }
-           // 2-if the file modified in the current branch since the split point  but not in the given branch  stay as it is.
-           else if (split != null && current != null && !split.equals(current) && split.equals(given)) {
+            // 2-if the file modified in the current branch since the split point  but not in the given branch  stay as it is.
+            else if (split != null && current != null && !split.equals(current) && split.equals(given)) {
                 // load file from current
                 Repository.loadFile(fileName, Repository.getHead());
-            }
-           else if (split == null && given == null && current != null) {
+            } else if (split == null && given == null && current != null) {
                 //load file from current
                 Repository.loadFile(fileName, Repository.getHead());
-            }
-           else if (split == null && current == null && given != null) {
+            } else if (split == null && current == null && given != null) {
                 // load it from given and stage it for addition
                 Repository.loadFile(fileName, branchCommitName);
                 File updated = Blob.getFile(splitCommit.getTrackByName().get(fileName));
                 StagingArea.stageForAdd(updated, fileName);
-            }
-           else if (split != null && given == null && split.equals(current)) {
+            } else if (split != null && given == null && split.equals(current)) {
                 // remove it from current and stage it for removal
                 Repository.removeFileFromCWD(fileName);
                 StagingArea.stageForRemove(fileName, currentCommit.getTrackByName().get(fileName));
-            }
-           else if (split != null && current == null && split.equals(given)) {
+            } else if (split != null && current == null && split.equals(given)) {
                 // do nothing
-            }
-           else if (!Objects.equals(split, current) && !Objects.equals(current, given) && !Objects.equals(split, given)) {
+            } else if (!Objects.equals(split, current) && !Objects.equals(current, given) && !Objects.equals(split, given)) {
                 // conflict
                 conflict = true;
                 String currentContent = readContentsAsString(Blob.getFile(currentCommit.getTrackByName().get(fileName)));

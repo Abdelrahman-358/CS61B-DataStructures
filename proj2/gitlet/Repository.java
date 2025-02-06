@@ -36,7 +36,7 @@ public class Repository implements Serializable {
      * commits directory
      */
     public static final File COMMIT_DIR = join(GITLET_DIR, "commits");
-    public static final File commitTree =join(COMMIT_DIR, "commitTree");
+    public static final File commitTree = join(COMMIT_DIR, "commitTree");
     /**
      * blobs directory
      */
@@ -106,8 +106,14 @@ public class Repository implements Serializable {
      *
      * @param fileName The name of the file to be staged for addition.
      */
-    public static void add(String fileName) {
+    public static void checkInitialized() {
+        if (!isInitialized()) {
+            errorMessage("Not in an initialized Gitlet directory.");
+        }
+    }
 
+    public static void add(String fileName) {
+        checkInitialized();
         File file = new File(CWD, fileName);
         if (!file.exists()) {
             errorMessage("File does not exist.");
@@ -144,6 +150,8 @@ public class Repository implements Serializable {
      * @param message The commit message describing the changes made in this commit.
      */
     public static void commit(String message) {
+        checkInitialized();
+
         if (message == null) {
             errorMessage("Please enter a commit message.");
         }
@@ -151,15 +159,15 @@ public class Repository implements Serializable {
         // remove from them the files tha staged to be removed
 
         copyTheLastCommitTrackedFiles();
-       boolean x= copyFilesFromStagingArea();
-       boolean y= removeFilesThatStagedTobeRemoved();
+        boolean x = copyFilesFromStagingArea();
+        boolean y = removeFilesThatStagedTobeRemoved();
 
-       if(!x & !y)
-           errorMessage("No changes added to the commit.");
+        if (!x & !y)
+            errorMessage("No changes added to the commit.");
 
         firstParent = getHead();
 
-        Commit commit = new Commit(message, firstParent,firstParent, trackedByName);
+        Commit commit = new Commit(message, firstParent, firstParent, trackedByName);
         String newHead = commit.saveCommit();
 
         Blob.saveBlobs(StagingArea.getFilesStagedForAddingFiles());
@@ -180,6 +188,8 @@ public class Repository implements Serializable {
      * @param fileName The name of the file to be removed or unstaged.
      */
     public static void rm(String fileName) {
+        checkInitialized();
+
         if (StagingArea.isStagedForAdding(fileName)) {
             StagingArea.unstageFromAdd(fileName);
         } else if (trackedByCurrentCommit(fileName)) {
@@ -198,6 +208,8 @@ public class Repository implements Serializable {
      * @param branchName The name of the branch to delete. Must not be null or empty.
      */
     public static void rmBranch(String branchName) {
+        checkInitialized();
+
         if (!Branches.branchExists(branchName)) {
             errorMessage("A branch with that name does not exist.");
         } else if (branchName.equals(Branches.getCurrentBranch())) {
@@ -215,12 +227,14 @@ public class Repository implements Serializable {
      * and the commit message.:
      */
     public static void log() {
+        checkInitialized();
+
         String current = getHead();
         while (true) {
             Commit commit = Commit.getCommitByName(current);
             printCommit(current, commit.getMessage(), commit.getDate());
             String par = commit.getFirstParent();
-            if ( Objects.equals(par,null)) {
+            if (Objects.equals(par, null)) {
                 break;
             }
             current = par;
@@ -232,6 +246,8 @@ public class Repository implements Serializable {
      * commit message, and commit date in a formatted manner.
      */
     public static void global_log() {
+        checkInitialized();
+
         List<String> ls = Utils.plainFilenamesIn(COMMIT_DIR);
         for (String s : ls) {
             Commit commit = Commit.getCommitByName(s);
@@ -246,6 +262,8 @@ public class Repository implements Serializable {
      * @param message The commit message to search for. This is a case-sensitive string.
      */
     public static void find(String message) {
+        checkInitialized();
+
         List<String> ls = Utils.plainFilenamesIn(COMMIT_DIR);
 
         boolean found = false;
@@ -270,10 +288,12 @@ public class Repository implements Serializable {
      * - Files staged for removal.
      * - Modifications not staged for commit.
      * - Untracked files.
-     *
-     *  The output follows a specific format to clearly present the repository's state
+     * <p>
+     * The output follows a specific format to clearly present the repository's state
      */
     public static void status() {
+        checkInitialized();
+
         printBranches();
 
         printStagedFiles();
@@ -312,6 +332,8 @@ public class Repository implements Serializable {
      * 1: If the file does not exist in the previous commit, abort, printing the error message File does not exist in that commit. Do not change the CWD.
      */
     public static void checkout(String fileName) {
+        checkInitialized();
+
         if (!trackedByCurrentCommit(fileName)) {
             errorMessage("File does not exist in that commit.");
         } else {
@@ -342,14 +364,15 @@ public class Repository implements Serializable {
      or add and commit it first. and exit; perform this check before doing anything else. Do not change the CWD.
      */
     public static void checkoutBranch(String branchName) {
+        checkInitialized();
+
         if (!Branches.branchExists(branchName)) {
             errorMessage("No such branch exists.");
         } else if (branchName.equals(Branches.getCurrentBranch())) {
             errorMessage("No need to checkout the current branch.");
         } else if (thereExistUnTrackedFile()) {
             errorMessage("There is an untracked file in the way; delete it, or add and commit it first.");
-        }
-        else {
+        } else {
             Branches.loadBranch(branchName);
         }
 
@@ -365,6 +388,8 @@ public class Repository implements Serializable {
      */
 
     public static void branch(String branchName) {
+        checkInitialized();
+
         if (Branches.branchExists(branchName)) {
             errorMessage("A branch with that name already exists.");
         } else {
@@ -372,20 +397,20 @@ public class Repository implements Serializable {
         }
     }
     /**--------------------------------------------------------------------------- reset------------------------------*/
-   /**
-    * Description: Checks out all the files tracked by the given commit. Removes tracked files that are not present in that
-    * commit. Also moves the current branch’s head to that commit node. See the intro for an example of what happens to the
-    * head pointer after using reset. The [commit id] may be abbreviated as for checkout. The staging area is cleared. The
-    * command is essentially checkout of an arbitrary commit that also changes the current branch head
-    *
-    *
-    * */
-    public static void reset(String commitName){
-        if(!Commit.commitExists(commitName)){
+    /**
+     * Description: Checks out all the files tracked by the given commit. Removes tracked files that are not present in that
+     * commit. Also moves the current branch’s head to that commit node. See the intro for an example of what happens to the
+     * head pointer after using reset. The [commit id] may be abbreviated as for checkout. The staging area is cleared. The
+     * command is essentially checkout of an arbitrary commit that also changes the current branch head
+     */
+    public static void reset(String commitName) {
+        checkInitialized();
+
+        if (!Commit.commitExists(commitName)) {
             errorMessage("No commit with that id exists.");
-        }else if(thereExistUnTrackedFile()){
+        } else if (thereExistUnTrackedFile()) {
             errorMessage("There is an untracked file in the way; delete it, or add and commit it first.");
-        }else{
+        } else {
             Commit.loadCommitFiles(commitName);
             Branches.updateBranch(Branches.getCurrentBranch(), commitName);
         }
@@ -402,22 +427,22 @@ public class Repository implements Serializable {
      * complete, and the operation ends with the message Given branch is an ancestor of the current branch. If the split point is
      * the current branch, then the effect is to check out the given branch, and the operation ends after printing the message
      * Current branch fast-forwarded. Otherwise, we continue with the steps below.
-     *
+     * <p>
      * 1-if the file modified in the given branch since the split point and not modified in the current modify it and stage it
      * 2-if the file modified in the current branch since the split point  but not in the given branch
      * 3-if the file modified in both current and given as the same way and if thet removed but there exist a file with the same name
-     *   that file is left alone not tracked nor staged in the merge
+     * that file is left alone not tracked nor staged in the merge
      * 4-if the file that was not present at the split point and are present only in the current branch it remains the same
      * 5-if the file that was not present at the split point and are present only in the given branch it checked out and staged
      * 6-if the file present at the split point unmodified it the current branch and absent in the given branch should be removed
      * 7-if the file present at the split point unmodified in the given branch and absent in the current branch should remain absent
-
-     *
+     * <p>
+     * <p>
      * Any files modified in different ways in the current and given branches are in conflict. “Modified in different
      * ways” can mean that the contents of both are changed and different from other, or the contents of one are changed
      * and the other file is deleted, or the file was absent at the split point and has different contents in the given
      * and current branches. In this case, replace the contents of the conflicted file with
-     *
+     * <p>
      * Failure cases:
      * If there are staged additions or removals present, print the error message You have uncommitted
      * changes. and exit.
@@ -430,8 +455,10 @@ public class Repository implements Serializable {
      * If an untracked file in the current commit would be overwritten
      * or deleted by the merge, print There is an untracked file in the way; delete it, or add and commit it first. and
      * exit; perform this check before doing anything else.
-     * */
+     */
     public static void merge(String branchName) {
+        checkInitialized();
+
         if (!StagingArea.isAddingStageEmpty() || !StagingArea.isRemovalStageEmpty()) {
             errorMessage("You have uncommitted changes.");
         } else if (!Branches.branchExists(branchName)) {
@@ -451,11 +478,12 @@ public class Repository implements Serializable {
      */
 
     public static void get(String branchName) {
+
         if (!Branches.branchExists(branchName)) {
             errorMessage("No such branch.");
         }
-        File f=new File(BRANCH,branchName);
-        Commit.getLowestCommonAncestor(getHead(),Utils.readContentsAsString(f));
+        File f = new File(BRANCH, branchName);
+        Commit.getLowestCommonAncestor(getHead(), Utils.readContentsAsString(f));
     }
 
     /**
@@ -470,16 +498,16 @@ public class Repository implements Serializable {
      */
 
     public static void loadFile(String fileName, String commitName) {
-            Commit commit = Commit.getCommitByName(commitName);
-            String blobName = commit.getTrackedFileByName(fileName);
-            File file = new File(Repository.CWD, fileName);
-            File blob = Blob.getFile(blobName);
-            Utils.writeContents(file, Utils.readContentsAsString(blob));
+        Commit commit = Commit.getCommitByName(commitName);
+        String blobName = commit.getTrackedFileByName(fileName);
+        File file = new File(Repository.CWD, fileName);
+        File blob = Blob.getFile(blobName);
+        Utils.writeContents(file, Utils.readContentsAsString(blob));
     }
 
     public static void printBranches() {
         System.out.println("=== Branches ===");
-        List<String>files = Branches.getBranchFiles();
+        List<String> files = Branches.getBranchFiles();
         for (String f : files) {
             if (f.equals(Branches.getCurrentBranch())) {
                 System.out.print("*");
@@ -516,7 +544,7 @@ public class Repository implements Serializable {
 
     public static void printUntrackedFiles() {
         System.out.println("=== Untracked Files ===");
-        List<String> list=getUntrackedFiles();
+        List<String> list = getUntrackedFiles();
         for (String f : list) {
             System.out.println(f);
         }
@@ -580,7 +608,7 @@ public class Repository implements Serializable {
 
     public static boolean removeFilesThatStagedTobeRemoved() {
         List<String> files = StagingArea.getStagedToBeRemoved();
-        if (files.size()>0) {
+        if (files.size() > 0) {
             for (String f : files) {
                 trackedByName.remove(f);
             }
@@ -630,34 +658,38 @@ public class Repository implements Serializable {
 
     public static boolean thereExistUnTrackedFile() {
 
-          return (getUntrackedFiles().size() != 0);
+        return (getUntrackedFiles().size() != 0);
     }
-    public static List<String> getCWDFiles(){
+
+    public static List<String> getCWDFiles() {
         return Utils.plainFilenamesIn(CWD);
     }
+
     public static List<String> getUntrackedFiles() {
         List<String> CWDFiles = getCWDFiles();
-        List<String> stagedFiles=StagingArea.getStagedForAdding();
-        Map<String,String> trackedByCommit =getTrackedFilesByCommit(getHead());
-        Map<String,String>tracked=new TreeMap<>();;
-        for(String s:trackedByCommit.keySet()){
-            tracked.put(s,s);
+        List<String> stagedFiles = StagingArea.getStagedForAdding();
+        Map<String, String> trackedByCommit = getTrackedFilesByCommit(getHead());
+        Map<String, String> tracked = new TreeMap<>();
+        ;
+        for (String s : trackedByCommit.keySet()) {
+            tracked.put(s, s);
         }
-        for(String s:stagedFiles){
-            tracked.put(s,s);
+        for (String s : stagedFiles) {
+            tracked.put(s, s);
         }
-        List<String> untrackedFiles =new ArrayList<>();
-        for(String s:CWDFiles){
-            if(!tracked.containsKey(s)){
+        List<String> untrackedFiles = new ArrayList<>();
+        for (String s : CWDFiles) {
+            if (!tracked.containsKey(s)) {
                 untrackedFiles.add(s);
             }
         }
 
         return untrackedFiles;
     }
-    public static Map<String,String> getTrackedFilesByCommit(String commitName) {
-        Commit commit=Commit.getCommitByName(commitName);
-        Map<String,String> list=commit.getTrackByName();
+
+    public static Map<String, String> getTrackedFilesByCommit(String commitName) {
+        Commit commit = Commit.getCommitByName(commitName);
+        Map<String, String> list = commit.getTrackByName();
         return list;
     }
 

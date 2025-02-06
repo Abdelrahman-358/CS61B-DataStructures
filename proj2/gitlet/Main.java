@@ -13,7 +13,6 @@ public class Main {
             Repository.errorMessage("Please enter a command.");
             return;
         }
-
         String firstArg = args[0];
         switch(firstArg) {
             case "init":

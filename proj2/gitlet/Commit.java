@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
  *
  * @author Abdelrahman Mostafa
  */
-public class Commit implements Serializable  {
+public class Commit implements Serializable {
     /**
      *
      * List all instance variables of the Commit class here with a useful
@@ -122,9 +122,9 @@ public class Commit implements Serializable  {
 
 
     public static Commit getLowestCommonAncestor(String firstCommit, String secondCommit) {
-        Commit first=Commit.getCommitByName(firstCommit);
-        Commit second=Commit.getCommitByName(secondCommit);
-        Set<String>set =getCommitList(first).stream().map(Commit::getName).collect(Collectors.toSet());
+        Commit first = Commit.getCommitByName(firstCommit);
+        Commit second = Commit.getCommitByName(secondCommit);
+        Set<String> set = getCommitList(first).stream().map(Commit::getName).collect(Collectors.toSet());
         Commit split = getCommitList(second).stream()
                 .filter(commit -> set.contains(commit.getName()))
                 .max(Comparator.comparing(Commit::getDate))
@@ -132,13 +132,14 @@ public class Commit implements Serializable  {
 
         return split;
     }
+
     public static List<Commit> getCommitList(Commit commit) {
         List<Commit> ans = new ArrayList<>();
-        dfs(commit, new HashSet<>(),ans);
+        dfs(commit, new HashSet<>(), ans);
         return ans;
     }
 
-    public static void dfs(Commit current, Set<String> visited,  List<Commit>list ) {
+    public static void dfs(Commit current, Set<String> visited, List<Commit> list) {
         list.add(current);
         visited.add(current.getName());
         String first = current.getFirstParent();
