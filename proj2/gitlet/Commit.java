@@ -129,7 +129,7 @@ public class Commit implements Serializable  {
                 .filter(commit -> set.contains(commit.getName()))
                 .max(Comparator.comparing(Commit::getDate))
                 .orElse(null);
-     
+
         return split;
     }
     public static List<Commit> getCommitList(Commit commit) {
