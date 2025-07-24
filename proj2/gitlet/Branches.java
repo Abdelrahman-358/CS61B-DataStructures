@@ -5,7 +5,12 @@ import java.io.File;
 import java.util.*;
 
 import static gitlet.Utils.readContentsAsString;
-
+/**
+ * Represents a gitlet Branch object.
+ *  does at a high level.
+ *
+ * @author Abdelrahman Mostafa
+ */
 public class Branches {
     public static final File BRANCH = Repository.BRANCH;
     public static String currentBranch = "no";

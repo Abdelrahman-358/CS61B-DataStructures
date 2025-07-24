@@ -2,7 +2,12 @@ package gitlet;
 
 import java.io.File;
 import java.util.List;
-
+/**
+ * Represents a gitlet StagingArea object.
+ *  does at a high level.
+ *
+ * @author Abdelrahman Mostafa
+ */
 public class StagingArea {
 
     // Directory for staging files

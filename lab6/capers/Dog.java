@@ -8,7 +8,7 @@ import static capers.Utils.*;
  * @author Abdelrahman Mostafa
 */
 
-public class Dog implements Serializable{ // TODO
+public class Dog implements Serializable{
 
     /** Folder that dogs live in. */
     static final File DOG_FOLDER = Utils.join(".capers", "dogs"); // TODO (hint: look at the `join`

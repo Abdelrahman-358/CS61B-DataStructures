@@ -101,6 +101,42 @@ public class Main {
                     Repository.errorMessage("Not enough arguments.");
                 }
                 break;
+            case "add-remote":
+                if (args.length == 3) {
+                    Repository.addRemote(args[1],args[2]);
+                }else{
+                    Repository.errorMessage("Not enough arguments.");
+                }
+                break;
+            case "rm-remote":
+                if (args.length == 2) {
+                    Repository.removeRemote(args[1]);
+                }else {
+                    Repository.errorMessage("Not enough arguments.");
+                }
+                break;
+            case "push":
+                if (args.length == 3) {
+                    Repository.push(args[1],args[2]);
+                }else{
+                    Repository.errorMessage("Not enough arguments.");
+                }
+                break;
+            case "fetch":
+                if (args.length == 3) {
+                    Repository.fetch(args[1],args[2]);
+                }else {
+                    Repository.errorMessage("Not enough arguments.");
+                }
+                break;
+            case "pull":
+                if (args.length == 3) {
+                    Repository.pull(args[1],args[2]);
+                }else {
+                    Repository.errorMessage("Not enough arguments.");
+                }
+                break;
+
             default:
                 Repository.errorMessage("No command with that name exists.");
                 break;

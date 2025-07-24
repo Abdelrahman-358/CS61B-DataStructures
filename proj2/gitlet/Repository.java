@@ -11,7 +11,6 @@ import static gitlet.Utils.*;
 
 /**
  * Represents a gitlet repository.
- *  TODO: It's a good idea to give a description here of what else this Class
  *  does at a high level.
  *
  * @author Abdelrahman Mostafa
@@ -106,11 +105,7 @@ public class Repository implements Serializable {
      *
      * @param fileName The name of the file to be staged for addition.
      */
-    public static void checkInitialized() {
-        if (!isInitialized()) {
-            errorMessage("Not in an initialized Gitlet directory.");
-        }
-    }
+
 
     public static void add(String fileName) {
         checkInitialized();
@@ -418,44 +413,6 @@ public class Repository implements Serializable {
     /** --------------------------------------------------------------------------- merge----------------------------*/
 
 
-    /**
-     * The split point is a latest common ancestor of the current and given branch heads: - A common ancestor is a commit
-     * to which there is a path (of 0 or more parent pointers) from both branch heads. - A latest common ancestor is a common
-     * ancestor that is not an ancestor of any other common ancestor. For example, although the leftmost commit in the diagram
-     * above is a common ancestor of master and branch, it is also an ancestor of the commit immediately to its right, so it is
-     * not a latest common ancestor. If the split point is the same commit as the given branch, then we do nothing; the merge is
-     * complete, and the operation ends with the message Given branch is an ancestor of the current branch. If the split point is
-     * the current branch, then the effect is to check out the given branch, and the operation ends after printing the message
-     * Current branch fast-forwarded. Otherwise, we continue with the steps below.
-     * <p>
-     * 1-if the file modified in the given branch since the split point and not modified in the current modify it and stage it
-     * 2-if the file modified in the current branch since the split point  but not in the given branch
-     * 3-if the file modified in both current and given as the same way and if thet removed but there exist a file with the same name
-     * that file is left alone not tracked nor staged in the merge
-     * 4-if the file that was not present at the split point and are present only in the current branch it remains the same
-     * 5-if the file that was not present at the split point and are present only in the given branch it checked out and staged
-     * 6-if the file present at the split point unmodified it the current branch and absent in the given branch should be removed
-     * 7-if the file present at the split point unmodified in the given branch and absent in the current branch should remain absent
-     * <p>
-     * <p>
-     * Any files modified in different ways in the current and given branches are in conflict. “Modified in different
-     * ways” can mean that the contents of both are changed and different from other, or the contents of one are changed
-     * and the other file is deleted, or the file was absent at the split point and has different contents in the given
-     * and current branches. In this case, replace the contents of the conflicted file with
-     * <p>
-     * Failure cases:
-     * If there are staged additions or removals present, print the error message You have uncommitted
-     * changes. and exit.
-     * If a branch with the given name does not exist, print the error message A branch with that
-     * name does not exist.
-     * If attempting to merge a branch with itself, print the error message Cannot merge a branch
-     * with itself.
-     * If merge would generate an error because the commit that it does has no changes in it, just let the
-     * normal commit error message for this go through.
-     * If an untracked file in the current commit would be overwritten
-     * or deleted by the merge, print There is an untracked file in the way; delete it, or add and commit it first. and
-     * exit; perform this check before doing anything else.
-     */
     public static void merge(String branchName) {
         checkInitialized();
 
@@ -470,6 +427,29 @@ public class Repository implements Serializable {
             // handle untracked files error
             Branches.mergeBranch(branchName);
         }
+
+    }
+    /** --------------------------------------------------------------------------- add-Remote-------------------------*/
+    public static void addRemote(String remotName,String remoteDirectory){
+        //TODO:complete this function
+    }
+    /** --------------------------------------------------------------------------- remove-Remote----------------------*/
+    public static void removeRemote(String remotName){
+        //TODO:complete this function
+    }
+    /** --------------------------------------------------------------------------- push-------------------------------*/
+    public static void push(String remoteName,String remoteBranchName){
+        //TODO:complete this function
+
+    }
+    /** --------------------------------------------------------------------------- fetch------------------------------*/
+    public static void fetch(String remoteName,String remoteBranchName){
+        //TODO:complete this function
+
+    }
+    /** --------------------------------------------------------------------------- pull-------------------------------*/
+    public static void pull(String remoteName,String remoteBranchName){
+        //TODO:complete this function
 
     }
 
@@ -728,7 +708,11 @@ public class Repository implements Serializable {
             file.delete();
         }
     }
-
+    public static void checkInitialized() {
+        if (!isInitialized()) {
+            errorMessage("Not in an initialized Gitlet directory.");
+        }
+    }
 
     /**
      * To Know if the file exist in the current working directory or not
